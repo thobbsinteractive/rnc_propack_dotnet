@@ -3,7 +3,7 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 17
 VisualStudioVersion = 17.6.33801.468
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "rnc_propack_dotnet", "rnc_propack_dotnet.csproj", "{36872542-D0C9-47AC-B65D-5893BE5A94AC}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "RncProPackDotnet", "RncProPackDotnet.csproj", "{36872542-D0C9-47AC-B65D-5893BE5A94AC}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
