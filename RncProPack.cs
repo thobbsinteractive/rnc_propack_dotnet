@@ -62,13 +62,13 @@ namespace rnc_propack_dotnet
             WriteWordBigEndian(buf, ref offset, (ushort)(val & 0xFFFF));
         }
 
-        public static void ReadBuffer(byte[] dest, byte[] source, ref int offset, int size)
+        public void ReadBuffer(byte[] dest, byte[] source, ref int offset, int size)
         {
             Buffer.BlockCopy(source, offset, dest, 0, size);
             offset += size;
         }
 
-        public static void WriteBuffer(byte[] dest, ref int offset, byte[] source, int size)
+        public void WriteBuffer(byte[] dest, ref int offset, byte[] source, int size)
         {
             Buffer.BlockCopy(source, 0, dest, offset, size);
             offset += size;
