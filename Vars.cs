@@ -2,65 +2,65 @@
 {
     public struct Vars
     {
-        public ushort max_matches;
-        public ushort enc_key;
-        public uint pack_block_size;
-        public ushort dict_size;
-        public uint method;
-        public uint puse_mode;
-        public uint input_size;
-        public uint file_size;
+        public ushort MaxMatches;
+        public ushort EncKey;
+        public uint PackBlockSize;
+        public ushort DictSize;
+        public uint Method;
+        public uint PuseMode;
+        public uint InputSize;
+        public uint FileSize;
 
         // Inner
-        public uint bytes_left;
-        public uint packed_size;
-        public uint processed_size;
-        public uint v7;
-        public uint pack_block_pos;
-        public ushort pack_token;
-        public ushort bit_count;
-        public ushort v11;
-        public ushort last_min_offset;
-        public uint v17;
-        public uint pack_block_left_size;
-        public ushort match_count;
-        public ushort match_offset;
+        public uint BytesLeft;
+        public uint PackedSize;
+        public uint ProcessedSize;
+        public uint V7;
+        public uint PackBlockPos;
+        public ushort PackToken;
+        public ushort BitCount;
+        public ushort V11;
+        public ushort LastMinOffset;
+        public uint V17;
+        public uint PackBlockLeftSize;
+        public ushort MatchCount;
+        public ushort MatchOffset;
         public uint v20;
         public uint v21;
-        public uint bit_buffer;
+        public uint BitBuffer;
 
-        public uint unpacked_size;
-        public uint rnc_data_size;
-        public ushort unpacked_crc;
-        public ushort unpacked_crc_real;
-        public ushort packed_crc;
-        public uint leeway;
-        public uint chunks_count;
+        public uint UnPackedSize;
+        public uint RncDataSize;
+        public ushort UnpackedCrc;
+        public ushort UnpackedCrcReal;
+        public ushort PackedCrc;
+        public uint Leeway;
+        public uint ChunksCount;
 
-        public byte[] mem1;
-        public byte[] pack_block_start;
-        public byte[] pack_block_max;
-        public byte[] pack_block_end;
-        public ushort[] mem2;
-        public ushort[] mem3;
-        public ushort[] mem4;
-        public ushort[] mem5;
+        public byte[] Mem1;
+        public byte[] PackBlockStart;
+        public byte[] PackBlockMax;
+        public byte[] PackBlockEnd;
+        public ushort[] Mem2;
+        public ushort[] Mem3;
+        public ushort[] Mem4;
+        public ushort[] Mem5;
 
-        public byte[] decoded;
-        public byte[] window;
+        public byte[] Decoded;
+        public byte[] Window;
 
-        public int read_start_offset;
-        public int write_start_offset;
-        public byte[] input;
-        public byte[] output;
-        public byte[] temp;
-        public int input_offset;
-        public int output_offset;
-        public int temp_offset;
+        public int ReadStartOffset;
+        public int WriteStartOffset;
+        public byte[] Input;
+        public byte[] Output;
+        public byte[] Temp;
+        public int InputOffset;
+        public int OutputOffset;
+        public int TempOffset;
 
-        public byte[] tmp_crc_data;
-        public Huftable[] raw_table;
-        public Huftable[] pos_table;
-        public Huftable[] len_table;
+        public byte[] TmpCrcData;
+        public Huftable[] RawTable;
+        public Huftable[] PosTable;
+        public Huftable[] LenTable;
     }
 }

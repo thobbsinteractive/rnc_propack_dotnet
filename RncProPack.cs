@@ -44,10 +44,10 @@ namespace rnc_propack_dotnet
             0x8201, 0x42C0, 0x4380, 0x8341, 0x4100, 0x81C1, 0x8081, 0x4040
         };
 
-        private static readonly byte[] match_count_bits_table = { 0x00, 0x0E, 0x08, 0x0A, 0x012, 0x013, 0x016 };
-        private static readonly byte[] match_count_bits_count_table = { 0, 4, 4, 4, 5, 5, 5 };
-        private static readonly byte[] match_offset_bits_table = { 0x00, 0x06, 0x08, 0x09, 0x15, 0x17, 0x1D, 0x1F, 0x28, 0x29, 0x2C, 0x2D, 0x38, 0x39, 0x3C, 0x3D };
-        private static readonly byte[] match_offset_bits_count_table = { 1, 3, 4, 4, 5, 5, 5, 5, 6, 6, 6, 6, 6, 6, 6, 6 };
+        private static readonly byte[] MatchCount_bits_table = { 0x00, 0x0E, 0x08, 0x0A, 0x012, 0x013, 0x016 };
+        private static readonly byte[] MatchCount_bits_count_table = { 0, 4, 4, 4, 5, 5, 5 };
+        private static readonly byte[] MatchOffset_bits_table = { 0x00, 0x06, 0x08, 0x09, 0x15, 0x17, 0x1D, 0x1F, 0x28, 0x29, 0x2C, 0x2D, 0x38, 0x39, 0x3C, 0x3D };
+        private static readonly byte[] MatchOffset_bits_count_table = { 1, 3, 4, 4, 5, 5, 5, 5, 6, 6, 6, 6, 6, 6, 6, 6 };
 
         public byte PeekByte(byte[] buf, int offset)
         {
@@ -143,90 +143,151 @@ namespace rnc_propack_dotnet
         public Vars InitVars()
         {
             Vars v = new Vars();
-            v.enc_key = 0;
-            v.max_matches = 0x1000;
-            v.unpacked_crc_real = 0;
-            v.pack_block_size = 0x3000;
-            v.dict_size = 0xFFFF;
-            v.method = 1;
-            v.puse_mode = 'p';
+            v.EncKey = 0;
+            v.MaxMatches = 0x1000;
+            v.UnpackedCrcReal = 0;
+            v.PackBlockSize = 0x3000;
+            v.DictSize = 0xFFFF;
+            v.Method = 1;
+            v.PuseMode = 'p';
 
-            v.read_start_offset = 0;
-            v.write_start_offset = 0;
-            v.input_offset = 0;
-            v.output_offset = 0;
-            v.temp_offset = 0;
+            v.ReadStartOffset = 0;
+            v.WriteStartOffset = 0;
+            v.InputOffset = 0;
+            v.OutputOffset = 0;
+            v.TempOffset = 0;
 
-            Array.Clear(v.tmp_crc_data, 0, v.tmp_crc_data.Length);
-            Array.Clear(v.raw_table, 0, v.raw_table.Length);
-            Array.Clear(v.pos_table, 0, v.pos_table.Length);
-            Array.Clear(v.len_table, 0, v.len_table.Length);
+            Array.Clear(v.TmpCrcData, 0, v.TmpCrcData.Length);
+            Array.Clear(v.RawTable, 0, v.RawTable.Length);
+            Array.Clear(v.PosTable, 0, v.PosTable.Length);
+            Array.Clear(v.LenTable, 0, v.LenTable.Length);
 
             return v;
         }
 
         public void InitDicts(ref Vars v)
         {
-            ushort dict_size = v.dict_size;
+            ushort DictSize = v.DictSize;
 
             for (int i = 0; i < 0x800; ++i)
             {
-                v.mem2[i * 0x10 + 0x0] = dict_size; v.mem2[i * 0x10 + 0x1] = dict_size;
-                v.mem2[i * 0x10 + 0x2] = dict_size; v.mem2[i * 0x10 + 0x3] = dict_size;
-                v.mem2[i * 0x10 + 0x4] = dict_size; v.mem2[i * 0x10 + 0x5] = dict_size;
-                v.mem2[i * 0x10 + 0x6] = dict_size; v.mem2[i * 0x10 + 0x7] = dict_size;
-                v.mem2[i * 0x10 + 0x8] = dict_size; v.mem2[i * 0x10 + 0x9] = dict_size;
-                v.mem2[i * 0x10 + 0xA] = dict_size; v.mem2[i * 0x10 + 0xB] = dict_size;
-                v.mem2[i * 0x10 + 0xC] = dict_size; v.mem2[i * 0x10 + 0xD] = dict_size;
-                v.mem2[i * 0x10 + 0xE] = dict_size; v.mem2[i * 0x10 + 0xF] = dict_size;
+                v.Mem2[i * 0x10 + 0x0] = DictSize; v.Mem2[i * 0x10 + 0x1] = DictSize;
+                v.Mem2[i * 0x10 + 0x2] = DictSize; v.Mem2[i * 0x10 + 0x3] = DictSize;
+                v.Mem2[i * 0x10 + 0x4] = DictSize; v.Mem2[i * 0x10 + 0x5] = DictSize;
+                v.Mem2[i * 0x10 + 0x6] = DictSize; v.Mem2[i * 0x10 + 0x7] = DictSize;
+                v.Mem2[i * 0x10 + 0x8] = DictSize; v.Mem2[i * 0x10 + 0x9] = DictSize;
+                v.Mem2[i * 0x10 + 0xA] = DictSize; v.Mem2[i * 0x10 + 0xB] = DictSize;
+                v.Mem2[i * 0x10 + 0xC] = DictSize; v.Mem2[i * 0x10 + 0xD] = DictSize;
+                v.Mem2[i * 0x10 + 0xE] = DictSize; v.Mem2[i * 0x10 + 0xF] = DictSize;
 
-                v.mem3[i * 0x10 + 0x0] = dict_size; v.mem3[i * 0x10 + 0x1] = dict_size;
-                v.mem3[i * 0x10 + 0x2] = dict_size; v.mem3[i * 0x10 + 0x3] = dict_size;
-                v.mem3[i * 0x10 + 0x4] = dict_size; v.mem3[i * 0x10 + 0x5] = dict_size;
-                v.mem3[i * 0x10 + 0x6] = dict_size; v.mem3[i * 0x10 + 0x7] = dict_size;
-                v.mem3[i * 0x10 + 0x8] = dict_size; v.mem3[i * 0x10 + 0x9] = dict_size;
-                v.mem3[i * 0x10 + 0xA] = dict_size; v.mem3[i * 0x10 + 0xB] = dict_size;
-                v.mem3[i * 0x10 + 0xC] = dict_size; v.mem3[i * 0x10 + 0xD] = dict_size;
-                v.mem3[i * 0x10 + 0xE] = dict_size; v.mem3[i * 0x10 + 0xF] = dict_size;
+                v.Mem3[i * 0x10 + 0x0] = DictSize; v.Mem3[i * 0x10 + 0x1] = DictSize;
+                v.Mem3[i * 0x10 + 0x2] = DictSize; v.Mem3[i * 0x10 + 0x3] = DictSize;
+                v.Mem3[i * 0x10 + 0x4] = DictSize; v.Mem3[i * 0x10 + 0x5] = DictSize;
+                v.Mem3[i * 0x10 + 0x6] = DictSize; v.Mem3[i * 0x10 + 0x7] = DictSize;
+                v.Mem3[i * 0x10 + 0x8] = DictSize; v.Mem3[i * 0x10 + 0x9] = DictSize;
+                v.Mem3[i * 0x10 + 0xA] = DictSize; v.Mem3[i * 0x10 + 0xB] = DictSize;
+                v.Mem3[i * 0x10 + 0xC] = DictSize; v.Mem3[i * 0x10 + 0xD] = DictSize;
+                v.Mem3[i * 0x10 + 0xE] = DictSize; v.Mem3[i * 0x10 + 0xF] = DictSize;
             }
 
-            for (int i = 0; i < dict_size; ++i)
+            for (int i = 0; i < DictSize; ++i)
             {
-                v.mem5[i & 0x7FFF] = 0;
-                v.mem4[i & 0x7FFF] = (ushort)i;
+                v.Mem5[i & 0x7FFF] = 0;
+                v.Mem4[i & 0x7FFF] = (ushort)i;
             }
 
-            v.last_min_offset = 0;
+            v.LastMinOffset = 0;
         }
 
         public void UpdatePackedCrc(ref Vars v, byte b)
         {
-            ushort crc = v.packed_crc;
-            v.packed_crc = (ushort)(CrcTable[(crc & 0xFF) ^ b] ^ (crc >> 8));
-            v.packed_size++;
+            ushort crc = v.PackedCrc;
+            v.PackedCrc = (ushort)(CrcTable[(crc & 0xFF) ^ b] ^ (crc >> 8));
+            v.PackedSize++;
         }
 
         public void UpdateUnpackedCrc(ref Vars v, byte b)
         {
-            ushort crc = v.unpacked_crc;
-            v.unpacked_crc = (ushort)(CrcTable[(crc & 0xFF) ^ b] ^ (crc >> 8));
-            v.processed_size++;
+            ushort crc = v.UnpackedCrc;
+            v.UnpackedCrc = (ushort)(CrcTable[(crc & 0xFF) ^ b] ^ (crc >> 8));
+            v.ProcessedSize++;
         }
 
         public void WriteToOutput(ref Vars v, byte b)
         {
-            if (v.packed_size >= (v.file_size - RNC_HEADER_SIZE))
+            if (v.PackedSize >= (v.FileSize - RNC_HEADER_SIZE))
                 return;
 
-            WriteByte(v.output, ref v.output_offset, b);
+            WriteByte(v.Output, ref v.OutputOffset, b);
             UpdatePackedCrc(ref v, b);
         }
 
         public byte ReadFromInput(ref Vars v)
         {
-            byte b = ReadByte(v.input, ref v.input_offset);
+            byte b = ReadByte(v.Input, ref v.InputOffset);
             UpdateUnpackedCrc(ref v, b);
             return b;
+        }
+
+        public void WriteBitsM2(ref Vars v, ushort value, int count)
+        {
+            uint mask = (uint)(1 << (count - 1));
+
+            while (count-- > 0)
+            {
+                v.PackToken <<= 1;
+
+                if ((value & mask) != 0)
+                    v.PackToken++;
+
+                mask >>= 1;
+                v.BitCount++;
+
+                if (v.BitCount == 8)
+                {
+                    WriteToOutput(ref v, (byte)(v.PackToken & 0xFF));
+
+                    for (int i = 0; i < v.V11; ++i)
+                        WriteToOutput(ref v, v.TmpCrcData[i]);
+
+                    v.V11 = 0;
+
+                    if ((v.ProcessedSize > v.PackedSize) && (v.ProcessedSize - v.PackedSize > v.Leeway))
+                        v.Leeway = v.ProcessedSize - v.PackedSize;
+
+                    v.BitCount = 0;
+                    v.PackToken = 0;
+                }
+            }
+        }
+
+        public void WriteBitsM1(Vars v, ushort value, int count)
+        {
+            while (count-- > 0)
+            {
+                v.PackToken >>= 1;
+                v.PackToken |= (value & 1) != 0 ? (ushort)0x8000u : (ushort)0;
+
+                value >>= 1;
+                v.BitCount++;
+
+                if (v.BitCount == 16)
+                {
+                    WriteToOutput(ref v, (byte)(v.PackToken & 0xFF));
+                    WriteToOutput(ref v, (byte)((v.PackToken >> 8) & 0xFF));
+
+                    for (int i = 0; i < v.V11; ++i)
+                        WriteToOutput(ref v, v.TmpCrcData[i]);
+
+                    v.V11 = 0;
+
+                    if ((v.ProcessedSize > v.PackedSize) && (v.ProcessedSize - v.PackedSize > v.Leeway))
+                        v.Leeway = v.ProcessedSize - v.PackedSize;
+
+                    v.BitCount = 0;
+                    v.PackToken = 0;
+                }
+            }
         }
     }
 }
