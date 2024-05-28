@@ -25,8 +25,8 @@
         public uint PackBlockLeftSize;
         public ushort MatchCount;
         public ushort MatchOffset;
-        public uint v20;
-        public uint v21;
+        public uint V20;
+        public uint V21;
         public uint BitBuffer;
 
         public uint UnPackedSize;
