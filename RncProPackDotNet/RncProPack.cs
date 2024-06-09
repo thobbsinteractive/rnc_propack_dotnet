@@ -113,13 +113,19 @@ namespace RncProPackDotNet
             offset += size;
         }
 
+        public void ReadBuffer(byte[] dest, int destOffset, byte[] source, ref int sourceOffset, int size)
+        {
+            Buffer.BlockCopy(source, sourceOffset, dest, destOffset, size);
+            sourceOffset += size;
+        }
+
         public void WriteBuffer(byte[] dest, ref int offset, byte[] source, int size)
         {
             Buffer.BlockCopy(source, 0, dest, offset, size);
             offset += size;
         }
 
-        public ushort CrcBlock(byte[] buf, ref int offset, int size)
+        public ushort CrcBlock(byte[] buf, int offset, int size)
         {
             ushort crc = 0;
 
@@ -1058,26 +1064,31 @@ namespace RncProPackDotNet
 
         private byte ReadSourceByte(ref Vars v)
         {
-            if (v.PackBlockPos >= 0xFFFD)
+            if (v.PackBlockStartIndex == 0xFFFD)
             {
                 int leftSize = (int)(v.FileSize - v.InputOffset);
 
                 int sizeToRead = Math.Min(leftSize, 0xFFFD);
 
-                v.PackBlockPos = 0;
+                v.PackBlockStartIndex = 0;
+                v.PackBlockStart = v.Mem1;
 
-                Array.Copy(v.Input, v.InputOffset, v.Mem1, 0, sizeToRead);
-                v.InputOffset += sizeToRead;
+                ReadBuffer(v.PackBlockStart, v.Input, ref v.InputOffset, sizeToRead);
 
-                if (leftSize > sizeToRead)
+                if (leftSize - sizeToRead > 2)
+                {
+                    leftSize = 2;
+                }
+                else
                 {
                     leftSize -= sizeToRead;
-                    Array.Copy(v.Input, v.InputOffset, v.Mem1, sizeToRead, Math.Min(leftSize, 2));
-                    v.InputOffset += Math.Min(leftSize, 2);
                 }
+
+                ReadBuffer(v.Mem1, sizeToRead, v.Input, ref v.InputOffset, leftSize);
+                v.InputOffset -= leftSize;
             }
 
-            return v.Mem1[v.PackBlockPos++];
+            return v.PackBlockStart[v.PackBlockStartIndex++];
         }
 
         private uint InputBitsM2(Vars v, short count)
@@ -1104,7 +1115,7 @@ namespace RncProPackDotNet
             return bits;
         }
 
-        private uint InputBitsM1(Vars v, short count)
+        private uint InputBitsM1(ref Vars v, short count)
         {
             uint bits = 0;
             uint prevBits = 1;
@@ -1115,7 +1126,7 @@ namespace RncProPackDotNet
                 {
                     byte b1 = ReadSourceByte(ref v);
                     byte b2 = ReadSourceByte(ref v);
-                    v.BitBuffer = (uint)((v.Mem1[v.PackBlockPos + 1] << 24) | (v.Mem1[v.PackBlockPos] << 16) | (b2 << 8) | b1);
+                    v.BitBuffer = (uint)((v.PackBlockStart[v.PackBlockStartIndex + 1] << 24) | (v.PackBlockStart[v.PackBlockStartIndex] << 16) | (b2 << 8) | b1);
 
                     v.BitCount = 16;
                 }
@@ -1133,7 +1144,7 @@ namespace RncProPackDotNet
 
         private int InputBits(ref Vars v, short count)
         {
-            return (int)(v.Method != 2 ? InputBitsM1(v, count) : InputBitsM2(v, count));
+            return (int)(v.Method != 2 ? InputBitsM1(ref v, count) : InputBitsM2(v, count));
         }
 
         private void DecodeMatchCount(Vars v)
@@ -1258,7 +1269,7 @@ namespace RncProPackDotNet
         {
             ClearTable(data, count);
 
-            int leafNodes = (int)InputBitsM1(v, 5);
+            int leafNodes = (int)InputBitsM1(ref v, 5);
 
             if (leafNodes > 0)
             {
@@ -1266,7 +1277,7 @@ namespace RncProPackDotNet
                     leafNodes = 16;
 
                 for (int i = 0; i < leafNodes; ++i)
-                    data[i].BitDepth = (ushort)InputBitsM1(v, 4);
+                    data[i].BitDepth = (ushort)InputBitsM1(ref v, 4);
 
                 Proc20(data, leafNodes);
             }
@@ -1280,12 +1291,12 @@ namespace RncProPackDotNet
             {
                 if (data[i].BitDepth != 0 && data[i].l3 == (v.BitBuffer & ((1 << data[i].BitDepth) - 1)))
                 {
-                    InputBitsM1(v, (short)data[i].BitDepth);
+                    InputBitsM1(ref v, (short)data[i].BitDepth);
 
                     if (i < 2)
                         return (uint)i;
 
-                    return InputBitsM1(v, (short)(i - 1)) | (uint)(1 << (i - 1));
+                    return InputBitsM1(ref v, (short)(i - 1)) | (uint)(1 << (i - 1));
                 }
 
                 i++;
@@ -1300,7 +1311,7 @@ namespace RncProPackDotNet
                 MakeHuffTable(ref v, v.LenTable, v.LenTable.Length);
                 MakeHuffTable(ref v, v.PosTable, v.PosTable.Length);
 
-                int subchunks = (int)InputBitsM1(v, 16);
+                int subchunks = (int)InputBitsM1(ref v, 16);
 
                 while (subchunks-- > 0)
                 {
@@ -1352,11 +1363,14 @@ namespace RncProPackDotNet
             ReadByte(v.Input, ref v.InputOffset);
             ReadByte(v.Input, ref v.InputOffset);
 
-            if (CrcBlock(v.Input, ref v.InputOffset, (int)v.PackedSize) != v.PackedCrc)
+            if (CrcBlock(v.Input, v.InputOffset, (int)v.PackedSize) != v.PackedCrc)
                 return 4;
 
             v.Mem1 = new byte[0xFFFF];
             v.Decoded = new byte[0xFFFF];
+            v.PackBlockStartIndex = 0xFFFD;
+            v.PackBlockStart = new byte[0xFFFF - 0xFFFD];
+            Array.Copy(v.Mem1, 0xFFFD, v.PackBlockStart, 0, v.PackBlockStart.Length);
             v.Window = new byte[v.DictSize];
 
             v.UnpackedCrcReal = 0;
