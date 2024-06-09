@@ -1,9 +1,8 @@
-﻿using RncProPackDotnet;
-using System;
+﻿using System;
 using System.IO;
 using System.Linq;
 
-namespace rnc_propack_dotnet
+namespace RncProPackDotNet
 {
     public class RncProPack
     {

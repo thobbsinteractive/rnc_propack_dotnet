@@ -1,4 +1,4 @@
-﻿namespace RncProPackDotnet
+﻿namespace RncProPackDotNet
 {
     public struct Vars
     {
