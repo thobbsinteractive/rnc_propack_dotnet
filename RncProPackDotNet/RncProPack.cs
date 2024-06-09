@@ -8,7 +8,6 @@ namespace RncProPackDotNet
     {
         private const uint RNC_SIGN = 0x524E43; // RNC
         private const byte RNC_HEADER_SIZE = 0x12;
-        private const uint MAX_BUF_SIZE = 0x1E00000;
 
         private static readonly ushort[] CrcTable = {
             0x0000, 0xC0C1, 0xC181, 0x0140, 0xC301, 0x03C0, 0x0280, 0xC241,
@@ -158,10 +157,10 @@ namespace RncProPackDotNet
             v.OutputOffset = 0;
             v.TempOffset = 0;
 
-            Array.Clear(v.TmpCrcData, 0, v.TmpCrcData.Length);
-            Array.Clear(v.RawTable, 0, v.RawTable.Length);
-            Array.Clear(v.PosTable, 0, v.PosTable.Length);
-            Array.Clear(v.LenTable, 0, v.LenTable.Length);
+            v.TmpCrcData = new byte[2048];
+            v.RawTable = new Huftable[16];
+            v.PosTable = new Huftable[16];
+            v.LenTable = new Huftable[16];
 
             return v;
         }

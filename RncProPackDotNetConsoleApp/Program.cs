@@ -1,10 +1,11 @@
-﻿using System;
-using RncProPackDotNet;
+﻿using RncProPackDotNet;
 
 namespace RncProPackDotNetConsoleApp
 {
     public class Program
     {
+        private const uint MAX_BUF_SIZE = 0x1E00000;
+
         public static void PrintUsage()
         {
             Console.WriteLine("Unpack        : <u> <infile.bin> [outfile.bin] [-i=hex_offset_to_read_from] [-k=hex_key_if_protected]");
@@ -15,18 +16,18 @@ namespace RncProPackDotNetConsoleApp
 
         public static int ParseArgs(string[] args, ref Vars vars)
         {
-            if (args.Length < 2)
+            if (args.Length < 1)
                 return 1;
 
-            if ("puse".IndexOf(args[1][0]) != -1)
+            if ("puse".IndexOf(args[0][0]) != -1)
             {
-                switch (args[1][0])
+                switch (args[0][0])
                 {
                     case 'p':
                     case 'u':
                     case 's':
                     case 'e':
-                        vars.PuseMode = args[1][0];
+                        vars.PuseMode = args[0][0];
                         break;
                 }
             }
@@ -35,7 +36,7 @@ namespace RncProPackDotNetConsoleApp
                 return 1;
             }
 
-            int i = 3;
+            int i = 2;
             while (i < args.Length)
             {
                 if ((args[i][0] == '-') || (args[i][0] == '/'))
@@ -85,7 +86,7 @@ namespace RncProPackDotNetConsoleApp
             Console.WriteLine("-= RNC ProPackED v1.8 [by Lab 313, Coverted by T.Hobbs] (09/06/2024) =-");
             Console.WriteLine("-----------------------------");
 
-            if (args.Length <= 2)
+            if (args.Length <= 1)
             {
                 Console.WriteLine("Compression type: Huffman + LZ77");
                 Console.WriteLine("De/Compressor: Dr.MefistO");
@@ -119,7 +120,7 @@ namespace RncProPackDotNetConsoleApp
 
             try
             {
-                using (FileStream inFile = new FileStream(args[2], FileMode.Open, FileAccess.Read))
+                using (FileStream inFile = new FileStream(args[1], FileMode.Open, FileAccess.Read))
                 {
                     vars.FileSize = (uint)(inFile.Length - vars.ReadStartOffset);
                     inFile.Seek(vars.ReadStartOffset, SeekOrigin.Begin);
@@ -133,8 +134,8 @@ namespace RncProPackDotNetConsoleApp
                 return -1;
             }
 
-            vars.Output = new byte[1024 * 1024]; // Example buffer size
-            vars.Temp = new byte[1024 * 1024];   // Example buffer size
+            vars.Output = new byte[MAX_BUF_SIZE];
+            vars.Temp = new byte[MAX_BUF_SIZE];
 
             int errorCode = 0;
             switch (vars.PuseMode)
