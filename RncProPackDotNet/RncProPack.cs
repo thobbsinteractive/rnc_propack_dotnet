@@ -1064,13 +1064,13 @@ namespace RncProPackDotNet
 
         private byte ReadSourceByte(ref Vars v)
         {
-            if (v.PackBlockStartIndex == 0xFFFD)
+            if (v.PackBlockStartIdx == 0xFFFD)
             {
                 int leftSize = (int)(v.FileSize - v.InputOffset);
 
                 int sizeToRead = Math.Min(leftSize, 0xFFFD);
 
-                v.PackBlockStartIndex = 0;
+                v.PackBlockStartIdx = 0;
                 v.PackBlockStart = v.Mem1;
 
                 ReadBuffer(v.PackBlockStart, v.Input, ref v.InputOffset, sizeToRead);
@@ -1088,7 +1088,7 @@ namespace RncProPackDotNet
                 v.InputOffset -= leftSize;
             }
 
-            return v.PackBlockStart[v.PackBlockStartIndex++];
+            return v.PackBlockStart[v.PackBlockStartIdx++];
         }
 
         private uint InputBitsM2(Vars v, short count)
@@ -1126,7 +1126,7 @@ namespace RncProPackDotNet
                 {
                     byte b1 = ReadSourceByte(ref v);
                     byte b2 = ReadSourceByte(ref v);
-                    v.BitBuffer = (uint)((v.PackBlockStart[v.PackBlockStartIndex + 1] << 24) | (v.PackBlockStart[v.PackBlockStartIndex] << 16) | (b2 << 8) | b1);
+                    v.BitBuffer = (uint)((v.PackBlockStart[v.PackBlockStartIdx + 1] << 24) | (v.PackBlockStart[v.PackBlockStartIdx] << 16) | (b2 << 8) | b1);
 
                     v.BitCount = 16;
                 }
@@ -1178,16 +1178,16 @@ namespace RncProPackDotNet
 
         private void WriteDecodedByte(ref Vars v, byte b)
         {
-            if (v.Window.Length == 0xFFFF)
+            if (v.WindowIdx == 0xFFFF)
             {
-                Array.Copy(v.Decoded, v.DictSize, v.Output, v.OutputOffset, 0xFFFF - v.DictSize);
-                v.OutputOffset += (0xFFFF - v.DictSize);
-                Array.Copy(v.Window, 0, v.Decoded, 0, v.DictSize);
-                v.Window = new byte[v.DictSize];
+                WriteBuffer(v.Output, ref v.OutputOffset, v.Decoded.Skip(v.DictSize).ToArray(), 0xFFFF - v.DictSize);
+                Array.Copy(v.Window.Skip(-v.DictSize).ToArray(), 0, v.Decoded, 0, v.DictSize);
+                v.WindowIdx = v.DictSize;
             }
 
-            v.Window[v.DictSize++] = b;
+            v.Window[v.WindowIdx++] = b;
             v.UnpackedCrcReal = (ushort)(CrcTable[(v.UnpackedCrcReal ^ b) & 0xFF] ^ (v.UnpackedCrcReal >> 8));
+            Console.WriteLine(v.UnpackedCrcReal.ToString());
         }
 
         private int UnpackDataM2(ref Vars v)
@@ -1283,7 +1283,7 @@ namespace RncProPackDotNet
             }
         }
 
-        private uint DecodeTableData(Vars v, Huftable[] data)
+        private uint DecodeTableData(ref Vars v, Huftable[] data)
         {
             int i = 0;
 
@@ -1315,7 +1315,7 @@ namespace RncProPackDotNet
 
                 while (subchunks-- > 0)
                 {
-                    uint dataLength = DecodeTableData(v, v.RawTable);
+                    uint dataLength = DecodeTableData(ref v, v.RawTable);
                     v.ProcessedSize += dataLength;
 
                     if (dataLength != 0)
@@ -1325,17 +1325,17 @@ namespace RncProPackDotNet
 
                         RorW(ref v.EncKey);
 
-                        v.BitBuffer = (uint)((((v.Mem1[v.PackBlockPos + 2] << 16) | (v.Mem1[v.PackBlockPos + 1] << 8) | v.Mem1[v.PackBlockPos]) << v.BitCount) | (v.BitBuffer & ((1 << v.BitCount) - 1)));
+                        v.BitBuffer = (uint)((((v.PackBlockStart[v.PackBlockStartIdx + 2] << 16) | (v.PackBlockStart[v.PackBlockStartIdx + 1] << 8) | v.PackBlockStart[v.PackBlockStartIdx]) << v.BitCount) | (v.BitBuffer & ((1 << v.BitCount) - 1)));
                     }
 
                     if (subchunks > 0)
                     {
-                        v.MatchOffset = (ushort)(DecodeTableData(v, v.LenTable) + 1);
-                        v.MatchCount = (ushort)(DecodeTableData(v, v.PosTable) + 2);
+                        v.MatchOffset = (ushort)(DecodeTableData(ref v, v.LenTable) + 1);
+                        v.MatchCount = (ushort)(DecodeTableData(ref v, v.PosTable) + 2);
                         v.ProcessedSize += v.MatchCount;
 
                         while (v.MatchCount-- > 0)
-                            WriteDecodedByte(ref v, v.Window[v.DictSize - v.MatchOffset]);
+                            WriteDecodedByte(ref v, v.Window[v.WindowIdx - v.MatchOffset]);
                     }
                 }
             }
@@ -1368,10 +1368,10 @@ namespace RncProPackDotNet
 
             v.Mem1 = new byte[0xFFFF];
             v.Decoded = new byte[0xFFFF];
-            v.PackBlockStartIndex = 0xFFFD;
-            v.PackBlockStart = new byte[0xFFFF - 0xFFFD];
-            Array.Copy(v.Mem1, 0xFFFD, v.PackBlockStart, 0, v.PackBlockStart.Length);
-            v.Window = new byte[v.DictSize];
+            v.PackBlockStart = v.Mem1;
+            v.PackBlockStartIdx = 0xFFFD;
+            v.Window = v.Decoded;
+            v.WindowIdx = v.DictSize;
 
             v.UnpackedCrcReal = 0;
             v.BitCount = 0;

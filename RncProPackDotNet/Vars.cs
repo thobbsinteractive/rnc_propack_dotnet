@@ -39,7 +39,7 @@
 
         public byte[] Mem1;
         public byte[] PackBlockStart;
-        public int PackBlockStartIndex;
+        public int PackBlockStartIdx;
         public byte[] PackBlockMax;
         public byte[] PackBlockEnd;
         public ushort[] Mem2;
@@ -49,6 +49,7 @@
 
         public byte[] Decoded;
         public byte[] Window;
+        public int WindowIdx;
 
         public int ReadStartOffset;
         public int WriteStartOffset;
