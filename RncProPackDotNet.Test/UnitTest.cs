@@ -1,28 +1,34 @@
-namespace RncProPackDotNet.Test
+namespace RncProPackDotNet.Test;
+
+[TestFixture]
+public class UnitTest
 {
-    public class UnitTest
+    [SetUp]
+    public void Setup()
     {
-        [SetUp]
-        public void Setup()
+    }
+
+    [TestCase(@"Resources\mazetrap_compressed.bin", @"Resources\mazetrap_uncompressed.bin")]
+    public void DeCompressionUnitTest(string input, string expected)
+    {
+        var rncProPack = new RncProPack();
+
+        var vars = rncProPack.InitVars();
+        vars.Output = new byte[0x1E00000];
+        vars.Temp = new byte[0x1E00000];
+
+        vars.Input = File.ReadAllBytes(input);
+        vars.FileSize = (uint)(vars.Input.Length - vars.ReadStartOffset);
+
+        var expectedBytes = File.ReadAllBytes(expected);
+
+        rncProPack.DoUnpack(ref vars);
+        
+        Assert.Equals(expectedBytes.Length, vars.Output.Length);
+
+        for(int i = 0; i < expectedBytes.Length; i++)
         {
-        }
-
-        [TestCase(@"LEVELS.DAT.BK")]
-        public void DeCompressionUnitTest(string path)
-        {
-            var rncProPack = new RncProPack();
-
-            var vars = rncProPack.InitVars();
-
-            vars.PuseMode = 'e';
-
-            vars.Input = File.ReadAllBytes(path);
-            vars.InputOffset = 8;
-            vars.FileSize = (uint)(vars.InputSize - vars.InputOffset);
-
-            rncProPack.DoSearch(ref vars, vars.FileSize, true);
-            
-            Assert.Pass();
+            Assert.Equals(expectedBytes[i], vars.Output[i]);
         }
     }
 }
