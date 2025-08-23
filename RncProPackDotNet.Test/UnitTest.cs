@@ -19,16 +19,24 @@ public class UnitTest
 
         vars.Input = File.ReadAllBytes(input);
         vars.FileSize = (uint)(vars.Input.Length - vars.ReadStartOffset);
+        vars.DictSize = 0x8000;
 
         var expectedBytes = File.ReadAllBytes(expected);
 
         rncProPack.DoUnpack(ref vars);
-        
-        Assert.Equals(expectedBytes.Length, vars.Output.Length);
 
-        for(int i = 0; i < expectedBytes.Length; i++)
+        using (FileStream outFile = new FileStream(@"Resources\temp_uncompressed.bin", FileMode.Create, FileAccess.Write))
         {
-            Assert.Equals(expectedBytes[i], vars.Output[i]);
+            outFile.Write(vars.Output, 0, vars.OutputOffset);
+        }
+
+        var outputBytes = File.ReadAllBytes(@"Resources\temp_uncompressed.bin");
+
+        Assert.That(expectedBytes.Length == outputBytes.Length);
+
+        for (int i = 0; i < expectedBytes.Length; i++)
+        {
+            Assert.That(expectedBytes[i] == vars.Output[i]);
         }
     }
 }
