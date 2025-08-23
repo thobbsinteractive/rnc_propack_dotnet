@@ -5,6 +5,8 @@ VisualStudioVersion = 17.6.33801.468
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "RncProPackDotNet", "RncProPackDotNet\RncProPackDotNet.csproj", "{36872542-D0C9-47AC-B65D-5893BE5A94AC}"
 EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "RncProPackDotNet.Test", "RncProPackDotNet.Test\RncProPackDotNet.Test.csproj", "{0C4A56DE-8220-4A1B-9725-583C2AB5E4A0}"
+EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "RncProPackDotNetConsoleApp", "RncProPackDotNetConsoleApp\RncProPackDotNetConsoleApp.csproj", "{1EEB2DAC-76D9-4CAE-8114-286112D1014C}"
 EndProject
 Global
@@ -17,6 +19,10 @@ Global
 		{36872542-D0C9-47AC-B65D-5893BE5A94AC}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{36872542-D0C9-47AC-B65D-5893BE5A94AC}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{36872542-D0C9-47AC-B65D-5893BE5A94AC}.Release|Any CPU.Build.0 = Release|Any CPU
+		{0C4A56DE-8220-4A1B-9725-583C2AB5E4A0}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{0C4A56DE-8220-4A1B-9725-583C2AB5E4A0}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{0C4A56DE-8220-4A1B-9725-583C2AB5E4A0}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{0C4A56DE-8220-4A1B-9725-583C2AB5E4A0}.Release|Any CPU.Build.0 = Release|Any CPU
 		{1EEB2DAC-76D9-4CAE-8114-286112D1014C}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{1EEB2DAC-76D9-4CAE-8114-286112D1014C}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{1EEB2DAC-76D9-4CAE-8114-286112D1014C}.Release|Any CPU.ActiveCfg = Release|Any CPU
