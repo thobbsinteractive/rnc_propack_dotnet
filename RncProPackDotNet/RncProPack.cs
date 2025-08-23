@@ -1185,7 +1185,8 @@ namespace RncProPackDotNet
                 v.WindowIdx = v.DictSize;
             }
 
-            v.Window[v.WindowIdx++] = b;
+            v.Window[v.WindowIdx] = b;
+            v.WindowIdx++;
             v.UnpackedCrcReal = (ushort)(CrcTable[(v.UnpackedCrcReal ^ b) & 0xFF] ^ (v.UnpackedCrcReal >> 8));
             Console.WriteLine(v.UnpackedCrcReal.ToString());
         }
