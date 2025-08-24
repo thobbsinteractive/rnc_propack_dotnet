@@ -1181,11 +1181,11 @@ namespace RncProPackDotNet
             if (v.WindowIdx == 0xFFFF)
             {
                 WriteBuffer(v.Output, ref v.OutputOffset, v.Decoded.Skip(v.DictSize).ToArray(), 0xFFFF - v.DictSize);
-                Array.Copy(v.Window.Skip(-v.DictSize).ToArray(), 0, v.Decoded, 0, v.DictSize);
+                Array.Copy(v.Decoded.Skip(-v.DictSize).ToArray(), 0, v.Decoded, 0, v.DictSize);
                 v.WindowIdx = v.DictSize;
             }
 
-            v.Window[v.WindowIdx] = b;
+            v.Decoded[v.WindowIdx] = b;
             v.WindowIdx++;
             v.UnpackedCrcReal = (ushort)(CrcTable[(v.UnpackedCrcReal ^ b) & 0xFF] ^ (v.UnpackedCrcReal >> 8));
             Console.WriteLine(v.UnpackedCrcReal.ToString());
@@ -1233,7 +1233,7 @@ namespace RncProPackDotNet
                             v.ProcessedSize += v.MatchCount;
 
                             while (v.MatchCount-- > 0)
-                                WriteDecodedByte(ref v, v.Window[v.DictSize - v.MatchOffset]);
+                                WriteDecodedByte(ref v, v.Decoded[v.WindowIdx + v.DictSize - v.MatchOffset]);
                         }
                         else
                         {
@@ -1245,7 +1245,7 @@ namespace RncProPackDotNet
                                 v.ProcessedSize += v.MatchCount;
 
                                 while (v.MatchCount-- > 0)
-                                    WriteDecodedByte(ref v, v.Window[v.DictSize - v.MatchOffset]);
+                                    WriteDecodedByte(ref v, v.Decoded[v.WindowIdx + v.DictSize - v.MatchOffset]);
                             }
                             else
                             {
@@ -1262,7 +1262,7 @@ namespace RncProPackDotNet
                 }
             }
 
-            Array.Copy(v.Decoded, v.DictSize, v.Output, v.OutputOffset, v.Window.Length - v.DictSize);
+            Array.Copy(v.Decoded, v.DictSize, v.Output, v.OutputOffset, v.WindowIdx - v.DictSize);
             return 0;
         }
 
@@ -1336,12 +1336,12 @@ namespace RncProPackDotNet
                         v.ProcessedSize += v.MatchCount;
 
                         while (v.MatchCount-- > 0)
-                            WriteDecodedByte(ref v, v.Window[v.WindowIdx - v.MatchOffset]);
+                            WriteDecodedByte(ref v, v.Decoded[v.WindowIdx - v.MatchOffset]);
                     }
                 }
             }
 
-            Array.Copy(v.Decoded, v.DictSize, v.Output, v.OutputOffset, v.Window.Length - v.DictSize);
+            WriteBuffer(v.Output, ref v.OutputOffset, v.Decoded.Skip(v.DictSize).ToArray(), v.WindowIdx - v.DictSize);
             return 0;
         }
 
@@ -1371,7 +1371,6 @@ namespace RncProPackDotNet
             v.Decoded = new byte[0xFFFF];
             v.PackBlockStart = v.Mem1;
             v.PackBlockStartIdx = 0xFFFD;
-            v.Window = v.Decoded;
             v.WindowIdx = v.DictSize;
 
             v.UnpackedCrcReal = 0;

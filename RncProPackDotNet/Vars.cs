@@ -48,7 +48,6 @@
         public ushort[] Mem5;
 
         public byte[] Decoded;
-        public byte[] Window;
         public int WindowIdx;
 
         public int ReadStartOffset;
