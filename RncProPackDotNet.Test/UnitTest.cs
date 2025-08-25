@@ -61,7 +61,7 @@ public class UnitTest
             outFile.Write(vars.Output, 0, vars.OutputOffset);
         }
 
-        var outputBytes = File.ReadAllBytes(@"Resources\temp_ucompressed.bin");
+        var outputBytes = File.ReadAllBytes(@"Resources\temp_compressed.bin");
 
         Assert.That(expectedBytes.Length == outputBytes.Length);
 
