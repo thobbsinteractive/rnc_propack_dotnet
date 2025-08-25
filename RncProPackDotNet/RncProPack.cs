@@ -296,7 +296,7 @@ namespace RncProPackDotNet
             }
         }
 
-        public void WriteBits(Vars v, ushort bits, int count)
+        public void WriteBits(ref Vars v, ushort bits, int count)
         {
             if (v.Method == 2)
                 WriteBitsM2(ref v, bits, count);
@@ -1004,8 +1004,8 @@ namespace RncProPackDotNet
             WriteWordBigEndian(v.Output, ref v.OutputOffset, 0);
 
             ushort key = v.EncKey;
-            WriteBits(v, 0, 1); // no lock
-            WriteBits(v, (ushort)((v.EncKey != 0) ? 1 : 0), 1);
+            WriteBits(ref v, 0, 1); // no lock
+            WriteBits(ref v, (ushort)((v.EncKey != 0) ? 1 : 0), 1);
 
             switch (v.Method)
             {
