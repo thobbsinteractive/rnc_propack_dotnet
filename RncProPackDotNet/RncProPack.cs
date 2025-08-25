@@ -351,7 +351,7 @@ namespace RncProPackDotNet
                         int maxSize = v.PackBlockEndIdx - v.PackBlockStartIdx;
                         if (maxCount == matchOffset)
                         {
-                            while (maxCount < maxSize && (v.PackBlockStart[maxCount] == v.PackBlockStart[maxCount - minOffset]))
+                            while (maxCount < maxSize && (v.PackBlockStart[v.PackBlockStartIdx + maxCount] == v.PackBlockStart[v.PackBlockStartIdx + maxCount - minOffset]))
                                 maxCount++;
                         }
                     }
@@ -391,13 +391,9 @@ namespace RncProPackDotNet
 
                     v.LastMinOffset = (ushort)((v.LastMinOffset + 1) % v.DictSize);
 
-                    //v.PackBlockStart = v.PackBlockStart[1..];
-                    byte[] slicedBytes = new byte[v.PackBlockStart.Length - 1];
-                    Array.Copy(v.PackBlockStart, 1, slicedBytes, 0, slicedBytes.Length);
-                    v.PackBlockStart = slicedBytes;
-
+                    v.PackBlockStartIdx++;
                     FindMatches(ref v);
-                    v.PackBlockStart = new byte[] { v.PackBlockStart[0] }.Concat(v.PackBlockStart).ToArray(); // Assuming PackBlockStart was sliced
+                    v.PackBlockStartIdx--;
 
                     v.LastMinOffset = minOffset;
 
@@ -517,9 +513,9 @@ namespace RncProPackDotNet
                 v.PackBlockPos += sizeToRead;
 
                 v.PackBlockMax = v.PackBlockStart;
-                v.PackBlockMaxIdx = (int)v.PackBlockPos;
+                v.PackBlockMaxIdx = v.PackBlockStartIdx + (int)v.PackBlockPos;
                 v.PackBlockEnd = v.PackBlockStart;
-                v.PackBlockEndIdx = (int)v.PackBlockPos;
+                v.PackBlockEndIdx = v.PackBlockStartIdx + (int)v.PackBlockPos;
 
                 if (v.PackBlockLeftSize < v.PackBlockPos)
                     v.PackBlockMaxIdx = v.PackBlockStartIdx + (int)v.PackBlockLeftSize;
@@ -555,9 +551,9 @@ namespace RncProPackDotNet
                     }
                 }
 
-                v.PackBlockPos = (ushort)(v.PackBlockEndIdx - v.PackBlockStartIdx);
+                v.PackBlockPos = (uint)(v.PackBlockEndIdx - v.PackBlockStartIdx);
 
-                Buffer.BlockCopy(v.PackBlockStart, v.PackBlockStartIdx, v.Mem1, 0, (int)(v.DictSize + v.PackBlockPos));
+                Buffer.BlockCopy(v.PackBlockStart, v.PackBlockStartIdx - v.DictSize, v.Mem1, 0, (int)(v.DictSize + v.PackBlockPos));
 
                 if ((v.PackBlockMaxIdx < v.PackBlockEndIdx) || ((v.PackBlockMaxIdx == v.PackBlockEndIdx) && v.BytesLeft == 0) || v.V17 == 0xFFFE)
                     break;
