@@ -301,7 +301,7 @@ namespace RncProPackDotNet
             if (v.Method == 2)
                 WriteBitsM2(ref v, bits, count);
             else
-                WriteBitsM2(ref v, bits, count);
+                WriteBitsM1(ref v, bits, count);
         }
 
         public int FindMatches(ref Vars v)
@@ -967,7 +967,7 @@ namespace RncProPackDotNet
                 WriteToOutput(ref v, (byte)(v.PackToken >> 8));
         }
 
-        public void DoPackData(Vars v)
+        public void DoPackData(ref Vars v)
         {
             v.UnPackedSize = v.FileSize;
             v.PackedSize = v.FileSize;
@@ -1055,7 +1055,7 @@ namespace RncProPackDotNet
             if ((PeekDWordBigEndian(v.Input, v.InputOffset) >> 8) == RNC_SIGN)
                 return 3;
 
-            DoPackData(v);
+            DoPackData(ref v);
             return 0;
         }
 
