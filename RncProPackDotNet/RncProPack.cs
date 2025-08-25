@@ -310,10 +310,10 @@ namespace RncProPackDotNet
             v.MatchOffset = 0;
 
             int matchOffset = 1;
-            while (matchOffset < (v.PackBlockEnd.Length - v.PackBlockStart.Length) && (v.PackBlockStart[matchOffset] == v.PackBlockStart[0]))
+            while (matchOffset < (v.PackBlockEndIdx - v.PackBlockStartIdx) && (v.PackBlockStart[v.PackBlockStartIdx + matchOffset] == v.PackBlockStart[v.PackBlockStartIdx]))
                 matchOffset++;
 
-            ushort firstWord = PeekWordBigEndian(v.PackBlockStart, 0);
+            ushort firstWord = PeekWordBigEndian(v.PackBlockStart, v.PackBlockStartIdx);
             ushort offset = v.Mem2[firstWord & 0x7FFF];
 
             while (true)
@@ -336,7 +336,7 @@ namespace RncProPackDotNet
                     minOffset += v.DictSize;
 
                 minOffset -= offset;
-                if (PeekWordBigEndian(v.PackBlockStart, -minOffset) == PeekWordBigEndian(v.PackBlockStart, 0))
+                if (PeekWordBigEndian(v.PackBlockStart, v.PackBlockStartIdx - minOffset) == PeekWordBigEndian(v.PackBlockStart, v.PackBlockStartIdx))
                 {
                     ushort maxCount = v.Mem5[offset & 0x7FFF];
 
@@ -348,7 +348,7 @@ namespace RncProPackDotNet
                             maxCount = (ushort)matchOffset;
                         }
 
-                        int maxSize = v.PackBlockEnd.Length - v.PackBlockStart.Length;
+                        int maxSize = v.PackBlockEndIdx - v.PackBlockStartIdx;
                         if (maxCount == matchOffset)
                         {
                             while (maxCount < maxSize && (v.PackBlockStart[maxCount] == v.PackBlockStart[maxCount - minOffset]))
@@ -383,7 +383,7 @@ namespace RncProPackDotNet
 
             if (v.MatchCount >= 2)
             {
-                if (v.PackBlockMax.Length - v.PackBlockStart.Length >= 3)
+                if (v.PackBlockMaxIdx - v.PackBlockStartIdx >= 3)
                 {
                     ushort count = v.MatchCount;
                     ushort offset = v.MatchOffset;
@@ -441,14 +441,14 @@ namespace RncProPackDotNet
 
                 if (restore != v.LastMinOffset)
                 {
-                    ushort bufferWord = PeekWordBigEndian(v.PackBlockStart, -v.DictSize);
+                    ushort bufferWord = PeekWordBigEndian(v.PackBlockStart, v.PackBlockStartIdx - v.DictSize);
                     v.Mem2[bufferWord & 0x7FFF] = restore;
 
                     if (v.DictSize == restore)
                         v.Mem3[bufferWord & 0x7FFF] = v.DictSize;
                 }
 
-                ushort bufferWord2 = PeekWordBigEndian(v.PackBlockStart, 0);
+                ushort bufferWord2 = PeekWordBigEndian(v.PackBlockStart, v.PackBlockStartIdx);
 
                 if (v.Mem2[bufferWord2 & 0x7FFF] == v.DictSize)
                     v.Mem2[bufferWord2 & 0x7FFF] = v.LastMinOffset;
@@ -458,7 +458,8 @@ namespace RncProPackDotNet
                 v.Mem3[bufferWord2 & 0x7FFF] = v.LastMinOffset;
 
                 int count = 1;
-                while ((count < (v.PackBlockEnd.Length - v.PackBlockStart.Length)) && (v.PackBlockStart[count] == v.PackBlockStart[0]))
+
+                while (count < (v.PackBlockEndIdx - v.PackBlockStartIdx) && (v.PackBlockStart[v.PackBlockStartIdx + count] == v.PackBlockStart[v.PackBlockStartIdx]))
                     count++;
 
                 v.Mem5[v.LastMinOffset & 0x7FFF] = (ushort)count;
@@ -467,10 +468,7 @@ namespace RncProPackDotNet
                 {
                     v.LastMinOffset = (ushort)((v.LastMinOffset + 1) % v.DictSize);
 
-                    //v.PackBlockStart = v.PackBlockStart[1..];
-                    byte[] slicedBytes = new byte[v.PackBlockStart.Length - 1];
-                    Array.Copy(v.PackBlockStart, 1, slicedBytes, 0, slicedBytes.Length);
-                    v.PackBlockStart = slicedBytes;
+                    v.PackBlockStartIdx++;
 
                     if (--w == 0)
                         return;
@@ -485,7 +483,7 @@ namespace RncProPackDotNet
                         restore = v.Mem4[v.LastMinOffset & 0x7FFF];
                         v.Mem4[v.LastMinOffset & 0x7FFF] = v.LastMinOffset;
 
-                        ushort bufferWord = PeekWordBigEndian(v.PackBlockStart, -v.DictSize);
+                        ushort bufferWord = PeekWordBigEndian(v.PackBlockStart, v.PackBlockStartIdx - v.DictSize);
                         v.Mem2[bufferWord & 0x7FFF] = restore;
 
                         if (v.DictSize == restore)
@@ -511,25 +509,28 @@ namespace RncProPackDotNet
                 if (v.BytesLeft < sizeToRead)
                     sizeToRead = (ushort)v.BytesLeft;
 
-                v.PackBlockStart = new byte[v.DictSize];
-                ReadBuffer(v.PackBlockStart, v.Input, ref v.InputOffset, sizeToRead);
+                v.PackBlockStart = v.Mem1;
+                v.PackBlockStartIdx = v.DictSize;
+                ReadBuffer(v.PackBlockStart, v.PackBlockStartIdx + (int)v.PackBlockPos, v.Input, ref v.InputOffset, sizeToRead);
 
                 v.BytesLeft -= sizeToRead;
                 v.PackBlockPos += sizeToRead;
 
-                v.PackBlockMax = new byte[v.PackBlockStart.Length];
-                v.PackBlockEnd = new byte[v.PackBlockStart.Length];
+                v.PackBlockMax = v.PackBlockStart;
+                v.PackBlockMaxIdx = (int)v.PackBlockPos;
+                v.PackBlockEnd = v.PackBlockStart;
+                v.PackBlockEndIdx = (int)v.PackBlockPos;
 
                 if (v.PackBlockLeftSize < v.PackBlockPos)
-                    v.PackBlockMax = new byte[v.PackBlockStart.Length];
+                    v.PackBlockMaxIdx = v.PackBlockStartIdx + (int)v.PackBlockLeftSize;
 
-                while ((v.PackBlockStart.Length < v.PackBlockMax.Length - 1) && v.V17 < 0xFFFE)
+                while ((v.PackBlockStartIdx < (v.PackBlockMaxIdx) - 1) && v.V17 < 0xFFFE)
                 {
                     FindAndCheckMatches(ref v);
 
                     if (v.MatchCount >= 2)
                     {
-                        if (v.PackBlockStart.Length + v.MatchCount <= v.PackBlockMax.Length)
+                        if (v.PackBlockStartIdx + v.MatchCount <= v.PackBlockMaxIdx)
                         {
                             UpdateBitsTable(ref v, v.RawTable, (ushort)dataLength);
                             UpdateBitsTable(ref v, v.PosTable, (ushort)(v.MatchCount - 2));
@@ -554,17 +555,17 @@ namespace RncProPackDotNet
                     }
                 }
 
-                v.PackBlockPos = (ushort)(v.PackBlockEnd.Length - v.PackBlockStart.Length);
+                v.PackBlockPos = (ushort)(v.PackBlockEndIdx - v.PackBlockStartIdx);
 
-                Buffer.BlockCopy(v.PackBlockStart, 0, v.Mem1, 0, (int)(v.DictSize + v.PackBlockPos));
+                Buffer.BlockCopy(v.PackBlockStart, v.PackBlockStartIdx, v.Mem1, 0, (int)(v.DictSize + v.PackBlockPos));
 
-                if ((v.PackBlockMax.Length < v.PackBlockEnd.Length) || ((v.PackBlockMax.Length == v.PackBlockEnd.Length) && v.BytesLeft == 0) || v.V17 == 0xFFFE)
+                if ((v.PackBlockMaxIdx < v.PackBlockEndIdx) || ((v.PackBlockMaxIdx == v.PackBlockEndIdx) && v.BytesLeft == 0) || v.V17 == 0xFFFE)
                     break;
 
-                v.PackBlockLeftSize -= (uint)(v.PackBlockStart.Length - v.Mem1.Length);
+                v.PackBlockLeftSize -= (uint)(v.PackBlockStartIdx - v.Mem1.Length);
             }
 
-            if (v.PackBlockMax.Length == v.PackBlockEnd.Length && v.BytesLeft == 0 && v.V17 != 0xFFFE)
+            if (v.PackBlockMaxIdx == v.PackBlockEndIdx && v.BytesLeft == 0 && v.V17 != 0xFFFE)
                 dataLength += v.PackBlockPos;
 
             UpdateBitsTable(ref v, v.RawTable, (ushort)dataLength);
@@ -1347,7 +1348,7 @@ namespace RncProPackDotNet
 
         public int DoUnpackData(ref Vars v)
         {
-            int start_pos = (int)v.InputOffset;
+            int start_pos = v.InputOffset;
 
             uint sign = ReadDWordBigEndian(v.Input, ref v.InputOffset);
             if ((sign >> 8) != RNC_SIGN)

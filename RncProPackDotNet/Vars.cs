@@ -41,7 +41,9 @@
         public byte[] PackBlockStart;
         public int PackBlockStartIdx;
         public byte[] PackBlockMax;
+        public int PackBlockMaxIdx;
         public byte[] PackBlockEnd;
+        public int PackBlockEndIdx;
         public ushort[] Mem2;
         public ushort[] Mem3;
         public ushort[] Mem4;
