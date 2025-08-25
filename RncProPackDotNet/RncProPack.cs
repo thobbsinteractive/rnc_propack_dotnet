@@ -1185,7 +1185,6 @@ namespace RncProPackDotNet
             v.Decoded[v.WindowIdx] = b;
             v.WindowIdx++;
             v.UnpackedCrcReal = (ushort)(CrcTable[(v.UnpackedCrcReal ^ b) & 0xFF] ^ (v.UnpackedCrcReal >> 8));
-            Console.WriteLine(v.UnpackedCrcReal.ToString());
         }
 
         private int UnpackDataM2(ref Vars v)
