@@ -1178,7 +1178,7 @@ namespace RncProPackDotNet
             if (v.WindowIdx == 0xFFFF)
             {
                 WriteBuffer(v.Output, ref v.OutputOffset, v.Decoded.Skip(v.DictSize).ToArray(), 0xFFFF - v.DictSize);
-                Array.Copy(v.Decoded.Skip(-v.DictSize).ToArray(), 0, v.Decoded, 0, v.DictSize);
+                Array.Copy(v.Decoded.Skip(v.WindowIdx -v.DictSize).ToArray(), 0, v.Decoded, 0, v.DictSize);
                 v.WindowIdx = v.DictSize;
             }
 

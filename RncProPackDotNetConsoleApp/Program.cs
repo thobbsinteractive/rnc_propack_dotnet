@@ -90,7 +90,8 @@ namespace RncProPackDotNetConsoleApp
             {
                 Console.WriteLine("Compression type: Huffman + LZ77");
                 Console.WriteLine("De/Compressor: Dr.MefistO");
-                Console.WriteLine("Coding: Dr. MefistO");
+                Console.WriteLine("C Version Coding: Dr. MefistO");
+                Console.WriteLine("C# Version Coding: T Hobbs");
                 Console.WriteLine("Original: Rob Northen Computing");
                 Console.WriteLine("Info: De(re)compiled source of the famous RNC ProPack compression tool\n");
                 PrintUsage();
