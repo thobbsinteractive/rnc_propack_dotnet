@@ -25,7 +25,7 @@ public class UnitTest
 
         rncProPack.DoUnpack(ref vars);
 
-        using (FileStream outFile = new FileStream(@"Resources\temp_uncompressed.bin", FileMode.Create, FileAccess.Write))
+        using (FileStream outFile = new FileStream(@"Resources/temp_uncompressed.bin", FileMode.Create, FileAccess.Write))
         {
             outFile.Write(vars.Output, 0, vars.OutputOffset);
         }
@@ -61,7 +61,7 @@ public class UnitTest
             outFile.Write(vars.Output, 0, vars.OutputOffset);
         }
 
-        var outputBytes = File.ReadAllBytes(@"Resources\temp_compressed.bin");
+        var outputBytes = File.ReadAllBytes(@"Resources/temp_compressed.bin");
 
         Assert.That(expectedBytes.Length == outputBytes.Length);
 

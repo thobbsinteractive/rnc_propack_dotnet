@@ -25,7 +25,7 @@ jobs:
       run: dotnet restore rnc_propack_dotnet.sln
       
     - name: Build
-      run: dotnet build rnc_propack_dotnet.sln --no-restore
+      run: dotnet build rnc_propack_dotnet.sln --no-restore --configuration Release
       
     - name: Test
-      run: dotnet test rnc_propack_dotnet.sln --no-build --verbosity normal
+      run: dotnet test rnc_propack_dotnet.sln --no-build --configuration Release --verbosity normal
