@@ -8,7 +8,7 @@ public class UnitTest
     {
     }
 
-    [TestCase(@"Resources\mazetrap_compressed.bin", @"Resources\mazetrap_uncompressed.bin")]
+    [TestCase(@"Resources/mazetrap_compressed.bin", @"Resources/mazetrap_uncompressed.bin")]
     public void DeCompressionUnitTest(string input, string expected)
     {
         var rncProPack = new RncProPack();
@@ -30,7 +30,7 @@ public class UnitTest
             outFile.Write(vars.Output, 0, vars.OutputOffset);
         }
 
-        var outputBytes = File.ReadAllBytes(@"Resources\temp_uncompressed.bin");
+        var outputBytes = File.ReadAllBytes(@"Resources/temp_uncompressed.bin");
 
         Assert.That(expectedBytes.Length == outputBytes.Length);
 
@@ -40,7 +40,7 @@ public class UnitTest
         }
     }
 
-    [TestCase(@"Resources\mazetrap_uncompressed.bin", @"Resources\mazetrap_compressed.bin")]
+    [TestCase(@"Resources/mazetrap_uncompressed.bin", @"Resources/mazetrap_compressed.bin")]
     public void CompressionUnitTest(string input, string expected)
     {
         var rncProPack = new RncProPack();
@@ -56,7 +56,7 @@ public class UnitTest
 
         rncProPack.DoPack(ref vars);
 
-        using (FileStream outFile = new FileStream(@"Resources\temp_compressed.bin", FileMode.Create, FileAccess.Write))
+        using (FileStream outFile = new FileStream(@"Resources/temp_compressed.bin", FileMode.Create, FileAccess.Write))
         {
             outFile.Write(vars.Output, 0, vars.OutputOffset);
         }
