@@ -20,17 +20,12 @@ jobs:
       uses: actions/setup-dotnet@v4
       with:
         dotnet-version: 8.0.x
+        
     - name: Restore dependencies
-      run: |
-        dotnet restore RncProPackDotnet/RncProPackDotnet.csproj
-        dotnet restore RncProPackDotNetConsoleApp/RncProPackDotNetConsoleApp.csproj
-        dotnet restore RncProPackDotNet.Test/RncProPackDotNet.Test.csproj
+      run: dotnet restore rnc_propack_dotnet.sln
       
     - name: Build
-      run: |
-        dotnet build RncProPackDotnet/RncProPackDotnet.csproj --no-restore
-        dotnet build RncProPackDotNetConsoleApp/RncProPackDotNetConsoleApp.csproj --no-restore
-        dotnet build RncProPackDotNet.Test/RncProPackDotNet.Test.csproj --no-restore
+      run: dotnet build rnc_propack_dotnet.sln --no-restore
       
     - name: Test
-      run: dotnet test RncProPackDotNet.Test/RncProPackDotNet.Test.csproj --no-build --verbosity normal
+      run: dotnet test rnc_propack_dotnet.sln --no-build --verbosity normal
