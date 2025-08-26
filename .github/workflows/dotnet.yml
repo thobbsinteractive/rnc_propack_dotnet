@@ -5,9 +5,9 @@ name: .NET
 
 on:
   push:
-    branches: [ "development" ]
+    branches: [ master, development ]
   pull_request:
-    branches: [ "development" ]
+    branches: [ master, development ]
 
 jobs:
   build:
@@ -21,7 +21,8 @@ jobs:
       with:
         dotnet-version: 8.0.x
     - name: Restore dependencies
-      run: dotnet restore
+      run: dotnet restore rnc_propack_dotnet.sln
+      
     - name: Build
       run: dotnet build --no-restore
     - name: Test
