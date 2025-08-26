@@ -21,9 +21,14 @@ jobs:
       with:
         dotnet-version: 8.0.x
     - name: Restore dependencies
-      run: dotnet restore ./rnc_propack_dotnet.sln
+      run: dotnet restore RncProPackDotnet/RncProPackDotnet.csproj
+      run: dotnet restore RncProPackDotNetConsoleApp/RncProPackDotNetConsoleApp.csproj
+      run: dotnet restore RncProPackDotNet.Test/RncProPackDotNet.Test.csproj
       
     - name: Build
-      run: dotnet build --no-restore
+      run: dotnet build RncProPackDotnet/RncProPackDotnet.csproj --no-restore
+      run: dotnet build RncProPackDotNetConsoleApp/RncProPackDotNetConsoleApp.csproj --no-restore
+      run: dotnet build RncProPackDotNet.Test/RncProPackDotNet.Test.csproj --no-restore
+      
     - name: Test
-      run: dotnet test --no-build --verbosity normal
+      run: dotnet test RncProPackDotNet.Test/RncProPackDotNet.Test.csproj --no-build --verbosity normal
