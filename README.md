@@ -5,6 +5,8 @@ A .Net Standard 2.0 library of rnc_propack_source (decompiled source of the famo
 You can see how the Library is used in the console application
 
 ```c#
+uint MAX_BUF_SIZE = 0x1E00000;
+
 var rncProPack = new RncProPackDotNet.RncProPack();
 var vars = rncProPack.InitVars();
 
