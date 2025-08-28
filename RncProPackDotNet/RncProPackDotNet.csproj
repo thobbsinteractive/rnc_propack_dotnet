@@ -14,7 +14,7 @@
     <PackAsTool>False</PackAsTool>
     <Copyright>Tim Hobbs 2025</Copyright>
     <Description>A .Net Standard 2.0 library conversion of rnc_propack_source (decompiled source of the famous RNC ProPack compression tool)</Description>
-    <Version>1.0.0.1</Version>
+    <Version>1.0.1.0</Version>
     <PackageLicenseExpression>MIT</PackageLicenseExpression>
   </PropertyGroup>
 
