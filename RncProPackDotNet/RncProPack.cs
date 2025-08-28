@@ -1421,7 +1421,7 @@ namespace RncProPackDotNet
             return DoUnpackData(ref v); // data
         }
 
-        public int DoSearch(ref Vars v, uint input_size, bool save)
+        public int DoSearch(ref Vars v, uint input_size, bool save, string outDir = "extracted")
         {
             int error_code = 11;
             bool has_rncs = false;
@@ -1446,7 +1446,6 @@ namespace RncProPackDotNet
 
                     if (save)
                     {
-                        string outDir = "extracted";
                         Directory.CreateDirectory(outDir);
 
                         string outName = $"{outDir}/data_{v.ReadStartOffset:X6}.bin";
