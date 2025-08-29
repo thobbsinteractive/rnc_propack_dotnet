@@ -1,6 +1,3 @@
-using Serilog;
-using Serilog.Extensions.Logging;
-
 namespace RncProPackDotNet.Test;
 
 [TestFixture]
@@ -9,17 +6,13 @@ public class UnitTest
     [SetUp]
     public void Setup()
     {
-        Log.Logger = new LoggerConfiguration()
-            .WriteTo.Console()
-            .CreateLogger();
+
     }
 
     [TestCase(@"Resources/mazetrap_compressed.bin", @"Resources/mazetrap_uncompressed.bin")]
     public void DeCompressionUnitTest(string input, string expected)
     {
-        var microsoftLogger = new SerilogLoggerFactory(Log.Logger).CreateLogger("rncProPack");
-
-        var rncProPack = new RncProPack(microsoftLogger);
+        var rncProPack = new RncProPack(null);
 
         var vars = rncProPack.InitVars();
         vars.Output = new byte[0x1E00000];
@@ -51,9 +44,7 @@ public class UnitTest
     [TestCase(@"Resources/mazetrap_uncompressed.bin", @"Resources/mazetrap_compressed.bin")]
     public void CompressionUnitTest(string input, string expected)
     {
-        var microsoftLogger = new SerilogLoggerFactory(Log.Logger).CreateLogger("rncProPack");
-
-        var rncProPack = new RncProPack(microsoftLogger);
+        var rncProPack = new RncProPack(null);
 
         var vars = rncProPack.InitVars();
         vars.Output = new byte[0x1E00000];

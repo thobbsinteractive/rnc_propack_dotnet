@@ -1447,7 +1447,7 @@ namespace RncProPackDotNet
 
                 if ((error_code = DoUnpack(ref v)) == 0)
                 {
-                    Logger.LogInformation($"RNC archive found: 0x{i:X6} ({v.PackedSize + RNC_HEADER_SIZE}/{v.OutputOffset}/{input_size} bytes)");
+                    Logger?.LogInformation($"RNC archive found: 0x{i:X6} ({v.PackedSize + RNC_HEADER_SIZE}/{v.OutputOffset}/{input_size} bytes)");
                     i += v.PackedSize + RNC_HEADER_SIZE;
                     error_code = 0;
                     has_rncs = true;
@@ -1468,10 +1468,10 @@ namespace RncProPackDotNet
                 {
                     switch (error_code)
                     {
-                        case 4: Logger.LogError($"Position 0x{i:X6}: Packed CRC is wrong!"); break;
-                        case 5: Logger.LogError($"Position 0x{i:X6}: Unpacked CRC is wrong!"); break;
-                        case 9: Logger.LogError($"Position 0x{i:X6}: File already packed!"); break;
-                        case 10: Logger.LogError($"Position 0x{i:X6}: Decryption key required!"); break;
+                        case 4: Logger?.LogError($"Position 0x{i:X6}: Packed CRC is wrong!"); break;
+                        case 5: Logger?.LogError($"Position 0x{i:X6}: Unpacked CRC is wrong!"); break;
+                        case 9: Logger?.LogError($"Position 0x{i:X6}: File already packed!"); break;
+                        case 10: Logger?.LogError($"Position 0x{i:X6}: Decryption key required!"); break;
                     }
 
                     i++;
