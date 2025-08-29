@@ -7,7 +7,7 @@ You can see how the Library is used in the console application
 ```c#
 uint MAX_BUF_SIZE = 0x1E00000;
 
-var rncProPack = new RncProPackDotNet.RncProPack(Logger);
+var rncProPack = new RncProPackDotNet.RncProPack(null);
 var vars = rncProPack.InitVars();
 
 if (vars.Method == 1)
@@ -36,6 +36,7 @@ vars.Temp = new byte[MAX_BUF_SIZE];
 
 int errorCode = 0;
 
+//Pick one of the following:
 //Pack File
 errorCode = rncProPack.DoPack(ref vars);
 
