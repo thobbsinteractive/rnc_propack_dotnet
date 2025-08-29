@@ -12,7 +12,7 @@ public class UnitTest
     [TestCase(@"Resources/mazetrap_compressed.bin", @"Resources/mazetrap_uncompressed.bin")]
     public void DeCompressionUnitTest(string input, string expected)
     {
-        var rncProPack = new RncProPack(null);
+        var rncProPack = new RncProPack();
 
         var vars = rncProPack.InitVars();
         vars.Output = new byte[0x1E00000];
@@ -44,7 +44,7 @@ public class UnitTest
     [TestCase(@"Resources/mazetrap_uncompressed.bin", @"Resources/mazetrap_compressed.bin")]
     public void CompressionUnitTest(string input, string expected)
     {
-        var rncProPack = new RncProPack(null);
+        var rncProPack = new RncProPack();
 
         var vars = rncProPack.InitVars();
         vars.Output = new byte[0x1E00000];

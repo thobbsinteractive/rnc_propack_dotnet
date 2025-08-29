@@ -52,7 +52,7 @@ namespace RncProPackDotNet
 
         private ILogger Logger { get; }
 
-        public RncProPack(ILogger logger)
+        public RncProPack(ILogger logger = null)
         {
             Logger = logger;
         }
