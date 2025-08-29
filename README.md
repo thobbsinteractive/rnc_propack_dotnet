@@ -7,7 +7,7 @@ You can see how the Library is used in the console application
 ```c#
 uint MAX_BUF_SIZE = 0x1E00000;
 
-var rncProPack = new RncProPackDotNet.RncProPack();
+var rncProPack = new RncProPackDotNet.RncProPack(Logger);
 var vars = rncProPack.InitVars();
 
 if (vars.Method == 1)
@@ -23,7 +23,7 @@ else if (vars.Method == 2)
     vars.MaxMatches = 0xFF;
 }
 
-using (FileStream inFile = new FileStream("InputFilePath", FileMode.Open, FileAccess.Read))
+using (FileStream inFile = new FileStream("[InputFilePath]", FileMode.Open, FileAccess.Read))
 {
     vars.FileSize = (uint)(inFile.Length - vars.ReadStartOffset);
     inFile.Seek(vars.ReadStartOffset, SeekOrigin.Begin);
@@ -43,7 +43,7 @@ errorCode = rncProPack.DoPack(ref vars);
 errorCode = rncProPack.DoUnpack(ref vars);
 
 //DoSearch of File
-errorCode = rncProPack.DoSearch(ref vars, vars.FileSize, vars.PuseMode == 'e');
+errorCode = rncProPack.DoSearch(ref vars, vars.FileSize, true, "[OutputDirPath]");
 
 if (errorCode == 0 && vars.PuseMode != 's' && vars.PuseMode != 'e')
 {
