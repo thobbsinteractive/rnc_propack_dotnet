@@ -1,4 +1,6 @@
 ﻿using RncProPackDotNet;
+using Serilog;
+using Serilog.Extensions.Logging;
 
 namespace RncProPackDotNetConsoleApp
 {
@@ -8,10 +10,10 @@ namespace RncProPackDotNetConsoleApp
 
         public static void PrintUsage()
         {
-            Console.WriteLine("Unpack        : <u> <infile.bin> [outfile.bin] [-i=hex_offset_to_read_from] [-k=hex_key_if_protected]");
-            Console.WriteLine("Search        : <s> <infile.bin>");
-            Console.WriteLine("Search&Extract: <e> <infile.bin>");
-            Console.WriteLine("Pack          : <p> <infile.bin> [outfile.bin] <-m=1|2> [-k=hex_key_to_protect]");
+            Log.Information("Unpack        : <u> <infile.bin> [outfile.bin] [-i=hex_offset_to_read_from] [-k=hex_key_if_protected]");
+            Log.Information("Search        : <s> <infile.bin>");
+            Log.Information("Search&Extract: <e> <infile.bin>");
+            Log.Information("Pack          : <p> <infile.bin> [outfile.bin] <-m=1|2> [-k=hex_key_to_protect]");
         }
 
         public static int ParseArgs(string[] args, ref Vars vars)
@@ -81,28 +83,34 @@ namespace RncProPackDotNetConsoleApp
 
         public static int Main(string[] args)
         {
-            var rncProPack = new RncProPackDotNet.RncProPack();
+            Log.Logger = new LoggerConfiguration()
+                .WriteTo.Console()
+                .CreateLogger();
 
-            Console.WriteLine("-= RNC ProPackED v1.8 [by Lab 313, Coverted by T.Hobbs] (09/06/2024) =-");
-            Console.WriteLine("-----------------------------");
+            var microsoftLogger = new SerilogLoggerFactory(Log.Logger).CreateLogger("rncProPack");
+
+            var rncProPack = new RncProPack(microsoftLogger);
+
+            Log.Information("-= RNC ProPackED v1.8 [by Lab 313, Coverted by T.Hobbs] (09/06/2024) =-");
+            Log.Information("-----------------------------");
 
             if (args.Length <= 1)
             {
-                Console.WriteLine("Compression type: Huffman + LZ77");
-                Console.WriteLine("De/Compressor: Dr.MefistO");
-                Console.WriteLine("C Version Coding: Dr. MefistO");
-                Console.WriteLine("C# Version Coding: T Hobbs");
-                Console.WriteLine("Original: Rob Northen Computing");
-                Console.WriteLine("Info: De(re)compiled source of the famous RNC ProPack compression tool\n");
+                Log.Information("Compression type: Huffman + LZ77");
+                Log.Information("De/Compressor: Dr.MefistO");
+                Log.Information("C Version Coding: Dr. MefistO");
+                Log.Information("C# Version Coding: T Hobbs");
+                Log.Information("Original: Rob Northen Computing");
+                Log.Information("Info: De(re)compiled source of the famous RNC ProPack compression tool\n");
                 PrintUsage();
-                Console.WriteLine("-----------------------------\n");
+                Log.Information("-----------------------------\n");
                 return 0;
             }
 
             var vars = rncProPack.InitVars();
             if (ParseArgs(args, ref vars) != 0)
             {
-                Console.WriteLine("Wrong command line specified!");
+                Log.Error("Wrong command line specified!");
                 return 1;
             }
 
@@ -129,9 +137,9 @@ namespace RncProPackDotNetConsoleApp
                     inFile.Read(vars.Input, 0, (int)vars.FileSize);
                 }
             }
-            catch (Exception)
+            catch (Exception ex)
             {
-                Console.WriteLine("Cannot open input file!");
+                Log.Error(ex, "Cannot open input file!");
                 return -1;
             }
 
@@ -171,12 +179,12 @@ namespace RncProPackDotNetConsoleApp
                     {
                         outFile.Write(vars.Output, 0, vars.OutputOffset);
                     }
-                    Console.WriteLine($"File successfully {(vars.PuseMode == 'p' ? "packed" : "unpacked")}!");
-                    Console.WriteLine($"Original/new size: {(vars.PuseMode == 'u' ? (vars.PackedSize + 18) : vars.FileSize)}/{vars.OutputOffset} bytes");
+                    Log.Information($"File successfully {(vars.PuseMode == 'p' ? "packed" : "unpacked")}!");
+                    Log.Information($"Original/new size: {(vars.PuseMode == 'u' ? (vars.PackedSize + 18) : vars.FileSize)}/{vars.OutputOffset} bytes");
                 }
-                catch (Exception)
+                catch (Exception ex)
                 {
-                    Console.WriteLine("Cannot create output file!");
+                    Log.Error(ex, "Cannot create output file!");
                     return -1;
                 }
             }
@@ -185,13 +193,13 @@ namespace RncProPackDotNetConsoleApp
                 switch (errorCode)
                 {
                     case 0: break;
-                    case 4: Console.WriteLine("Corrupted input data."); break;
-                    case 5: Console.WriteLine("CRC check failed."); break;
+                    case 4: Log.Error("Corrupted input data."); break;
+                    case 5: Log.Error("CRC check failed."); break;
                     case 6:
-                    case 7: Console.WriteLine("Wrong RNC header."); break;
-                    case 10: Console.WriteLine("Decryption key required."); break;
-                    case 11: Console.WriteLine("No RNC archives were found."); break;
-                    default: Console.WriteLine($"Cannot process file. Error code: {errorCode:X}"); break;
+                    case 7: Log.Error("Wrong RNC header."); break;
+                    case 10: Log.Error("Decryption key required."); break;
+                    case 11: Log.Error("No RNC archives were found."); break;
+                    default: Log.Error($"Cannot process file. Error code: {errorCode:X}"); break;
                 }
             }
 

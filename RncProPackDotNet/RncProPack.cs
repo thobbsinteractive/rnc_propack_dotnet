@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Microsoft.Extensions.Logging;
+using System;
 using System.IO;
 using System.Linq;
 
@@ -48,6 +49,13 @@ namespace RncProPackDotNet
         private static readonly byte[] MatchCountBitsCountTable = { 0, 4, 4, 4, 5, 5, 5 };
         private static readonly byte[] MatchOffsetBitsTable = { 0x00, 0x06, 0x08, 0x09, 0x15, 0x17, 0x1D, 0x1F, 0x28, 0x29, 0x2C, 0x2D, 0x38, 0x39, 0x3C, 0x3D };
         private static readonly byte[] MatchOffsetBitsCountTable = { 1, 3, 4, 4, 5, 5, 5, 5, 6, 6, 6, 6, 6, 6, 6, 6 };
+
+        private ILogger Logger { get; }
+
+        public RncProPack(ILogger logger)
+        {
+            Logger = logger;
+        }
 
         public byte PeekByte(byte[] buf, int offset)
         {
@@ -1439,7 +1447,7 @@ namespace RncProPackDotNet
 
                 if ((error_code = DoUnpack(ref v)) == 0)
                 {
-                    Console.WriteLine($"RNC archive found: 0x{i:X6} ({v.PackedSize + RNC_HEADER_SIZE}/{v.OutputOffset}/{input_size} bytes)");
+                    Logger.LogInformation($"RNC archive found: 0x{i:X6} ({v.PackedSize + RNC_HEADER_SIZE}/{v.OutputOffset}/{input_size} bytes)");
                     i += v.PackedSize + RNC_HEADER_SIZE;
                     error_code = 0;
                     has_rncs = true;
@@ -1460,10 +1468,10 @@ namespace RncProPackDotNet
                 {
                     switch (error_code)
                     {
-                        case 4: Console.WriteLine($"Position 0x{i:X6}: Packed CRC is wrong!"); break;
-                        case 5: Console.WriteLine($"Position 0x{i:X6}: Unpacked CRC is wrong!"); break;
-                        case 9: Console.WriteLine($"Position 0x{i:X6}: File already packed!"); break;
-                        case 10: Console.WriteLine($"Position 0x{i:X6}: Decryption key required!"); break;
+                        case 4: Logger.LogError($"Position 0x{i:X6}: Packed CRC is wrong!"); break;
+                        case 5: Logger.LogError($"Position 0x{i:X6}: Unpacked CRC is wrong!"); break;
+                        case 9: Logger.LogError($"Position 0x{i:X6}: File already packed!"); break;
+                        case 10: Logger.LogError($"Position 0x{i:X6}: Decryption key required!"); break;
                     }
 
                     i++;
