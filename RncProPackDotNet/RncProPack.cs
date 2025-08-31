@@ -10,7 +10,7 @@ namespace RncProPackDotNet
     {
         private const uint RNC_SIGN = 0x524E43; // RNC
         private const byte RNC_HEADER_SIZE = 0x12;
-        private const int LEVELS_TAB_FILE_SIZE = 4000;
+        private const int TAB_FILE_SIZE = 4000;
 
         private static readonly ushort[] CrcTable = {
             0x0000, 0xC0C1, 0xC181, 0x0140, 0xC301, 0x03C0, 0x0280, 0xC241,
@@ -1069,12 +1069,12 @@ namespace RncProPackDotNet
             return 0;
         }
 
-        public int DoPackageBullfrogFilesToDatandTab(ref Vars v, string[] filePaths, bool save, bool createTab, string outputPath)
+        public int DoPackageBullfrogFilesToDatandTab(ref Vars v, string[] filePaths, int fileSizeBytes, int tabSizeBytes, bool save, bool createTab, string outputPath)
         {
-            return DoPackage(ref v, filePaths, save, true, outputPath, new byte[] { 0x42, 0x55, 0x4C, 0x4C, 0x46, 0x52, 0x4F, 0x47 });
+            return DoPackage(ref v, filePaths, fileSizeBytes, tabSizeBytes, save, true, outputPath, new byte[] { 0x42, 0x55, 0x4C, 0x4C, 0x46, 0x52, 0x4F, 0x47 });
         }
-
-        public int DoPackage(ref Vars v, string[] filePaths, bool save, bool createTab, string outputPath, byte[] header = null)
+        
+        public int DoPackage(ref Vars v, string[] filePaths, int fileSizeBytes, int tabSizeBytes, bool save, bool createTab, string outputPath, byte[] header = null)
         {
             var existingFiles = filePaths.Where(f => File.Exists(f));
             var errorCode = 0;
@@ -1116,12 +1116,12 @@ namespace RncProPackDotNet
 
             WriteToArray(header, v.Output, 0); // BULLFROG
 
-            int fileIndex = header.Length;
+            int fileOffsetIndex = header.Length;
 
             foreach (var fileBytes in packedFiles)
             {
-                WriteToArray(fileBytes, v.Output, fileIndex);
-                fileIndex += fileBytes.Length;
+                WriteToArray(fileBytes, v.Output, fileOffsetIndex);
+                fileOffsetIndex += fileBytes.Length;
             }
 
             if (save)
@@ -1129,16 +1129,16 @@ namespace RncProPackDotNet
 
             if (createTab)
             {
-                int levelIndex = 8;
-                fileIndex = 4;
-                v.OutputTab = new byte[LEVELS_TAB_FILE_SIZE];
+                fileOffsetIndex = 8;
+                int fileIndex = 4;
+                v.OutputTab = new byte[tabSizeBytes];
                 WriteToArray(new byte[] { 0x08, 0x00, 0x00, 0x00 }, v.OutputTab, 0); // BULLFROG header means first entry is always byte 08
 
                 foreach (var filePath in existingFiles)
                 {
                     var file = File.ReadAllBytes(filePath);
-                    levelIndex += file.Length;
-                    WriteToArray(BitConverter.GetBytes(levelIndex), v.OutputTab, fileIndex);
+                    fileOffsetIndex += file.Length;
+                    WriteToArray(BitConverter.GetBytes(fileOffsetIndex), v.OutputTab, fileIndex);
                     fileIndex += 4;
                     Console.WriteLine($"Added File Address: {fileIndex}");
                 }
