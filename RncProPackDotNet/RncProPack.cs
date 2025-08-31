@@ -1069,12 +1069,12 @@ namespace RncProPackDotNet
             return 0;
         }
 
-        public int PackageBullfrogFilesToDatandTab(ref Vars v, string[] filePaths, bool save, bool createTab, string outputPath)
+        public int DoPackageBullfrogFilesToDatandTab(ref Vars v, string[] filePaths, bool save, bool createTab, string outputPath)
         {
-            return Package(ref v, filePaths, save, true, outputPath, new byte[] { 0x42, 0x55, 0x4C, 0x4C, 0x46, 0x52, 0x4F, 0x47 });
+            return DoPackage(ref v, filePaths, save, true, outputPath, new byte[] { 0x42, 0x55, 0x4C, 0x4C, 0x46, 0x52, 0x4F, 0x47 });
         }
 
-        public int Package(ref Vars v, string[] filePaths, bool save, bool createTab, string outputPath, byte[] header = null)
+        public int DoPackage(ref Vars v, string[] filePaths, bool save, bool createTab, string outputPath, byte[] header = null)
         {
             var existingFiles = filePaths.Where(f => File.Exists(f));
             var errorCode = 0;
@@ -1088,7 +1088,6 @@ namespace RncProPackDotNet
             {
                 throw new ArgumentNullException(Path.GetDirectoryName(outputPath));
             }
-
 
             List<byte[]> packedFiles = new List<byte[]>();
 
@@ -1121,7 +1120,7 @@ namespace RncProPackDotNet
 
             foreach (var fileBytes in packedFiles)
             {
-                WriteToArray(fileBytes, v.Output, fileBytes.Length + fileIndex);
+                WriteToArray(fileBytes, v.Output, fileIndex);
                 fileIndex += fileBytes.Length;
             }
 
