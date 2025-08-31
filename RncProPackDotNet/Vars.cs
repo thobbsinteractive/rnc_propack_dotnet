@@ -56,6 +56,7 @@
         public int WriteStartOffset;
         public byte[] Input;
         public byte[] Output;
+        public byte[] OutputTab;
         public byte[] Temp;
         public int InputOffset;
         public int OutputOffset;

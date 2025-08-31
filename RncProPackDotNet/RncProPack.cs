@@ -1,5 +1,6 @@
 ﻿using Microsoft.Extensions.Logging;
 using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 
@@ -9,6 +10,7 @@ namespace RncProPackDotNet
     {
         private const uint RNC_SIGN = 0x524E43; // RNC
         private const byte RNC_HEADER_SIZE = 0x12;
+        private const int LEVELS_TAB_FILE_SIZE = 4000;
 
         private static readonly ushort[] CrcTable = {
             0x0000, 0xC0C1, 0xC181, 0x0140, 0xC301, 0x03C0, 0x0280, 0xC241,
@@ -57,29 +59,29 @@ namespace RncProPackDotNet
             Logger = logger;
         }
 
-        public byte PeekByte(byte[] buf, int offset)
+        protected byte PeekByte(byte[] buf, int offset)
         {
             return buf[offset];
         }
 
-        public byte ReadByte(byte[] buf, ref int offset)
+        protected byte ReadByte(byte[] buf, ref int offset)
         {
             return buf[offset++];
         }
 
-        public void WriteByte(byte[] buf, ref int offset, byte b)
+        protected void WriteByte(byte[] buf, ref int offset, byte b)
         {
             buf[offset++] = b;
         }
 
-        public ushort PeekWordBigEndian(byte[] buf, int offset)
+        protected ushort PeekWordBigEndian(byte[] buf, int offset)
         {
             byte b1 = PeekByte(buf, offset + 0);
             byte b2 = PeekByte(buf, offset + 1);
 
             return (ushort)((b1 << 8) | b2);
         }
-        public ushort ReadWordBigEndian(byte[] buf, ref int offset)
+        protected ushort ReadWordBigEndian(byte[] buf, ref int offset)
         {
             byte b1 = ReadByte(buf, ref offset);
             byte b2 = ReadByte(buf, ref offset);
@@ -87,13 +89,13 @@ namespace RncProPackDotNet
             return (ushort)((b1 << 8) | b2);
         }
 
-        public void WriteWordBigEndian(byte[] buf, ref int offset, ushort val)
+        protected void WriteWordBigEndian(byte[] buf, ref int offset, ushort val)
         {
             WriteByte(buf, ref offset, (byte)((val >> 8) & 0xFF));
             WriteByte(buf, ref offset, (byte)((val >> 0) & 0xFF));
         }
 
-        public uint PeekDWordBigEndian(byte[] buf, int offset)
+        protected uint PeekDWordBigEndian(byte[] buf, int offset)
         {
             ushort w1 = PeekWordBigEndian(buf, offset + 0);
             ushort w2 = PeekWordBigEndian(buf, offset + 2);
@@ -101,7 +103,7 @@ namespace RncProPackDotNet
             return ((uint)w1 << 16) | w2;
         }
 
-        public uint ReadDWordBigEndian(byte[] buf, ref int offset)
+        protected uint ReadDWordBigEndian(byte[] buf, ref int offset)
         {
             ushort w1 = ReadWordBigEndian(buf, ref offset);
             ushort w2 = ReadWordBigEndian(buf, ref offset);
@@ -109,31 +111,31 @@ namespace RncProPackDotNet
             return ((uint)w1 << 16) | w2;
         }
 
-        public void WriteDWordBigEndian(byte[] buf, ref int offset, uint val)
+        protected void WriteDWordBigEndian(byte[] buf, ref int offset, uint val)
         {
             WriteWordBigEndian(buf, ref offset, (ushort)(val >> 16));
             WriteWordBigEndian(buf, ref offset, (ushort)(val & 0xFFFF));
         }
 
-        public void ReadBuffer(byte[] dest, byte[] source, ref int offset, int size)
+        protected void ReadBuffer(byte[] dest, byte[] source, ref int offset, int size)
         {
             Buffer.BlockCopy(source, offset, dest, 0, size);
             offset += size;
         }
 
-        public void ReadBuffer(byte[] dest, int destOffset, byte[] source, ref int sourceOffset, int size)
+        protected void ReadBuffer(byte[] dest, int destOffset, byte[] source, ref int sourceOffset, int size)
         {
             Buffer.BlockCopy(source, sourceOffset, dest, destOffset, size);
             sourceOffset += size;
         }
 
-        public void WriteBuffer(byte[] dest, ref int offset, byte[] source, int size)
+        protected void WriteBuffer(byte[] dest, ref int offset, byte[] source, int size)
         {
             Buffer.BlockCopy(source, 0, dest, offset, size);
             offset += size;
         }
 
-        public ushort CrcBlock(byte[] buf, int offset, int size)
+        protected ushort CrcBlock(byte[] buf, int offset, int size)
         {
             ushort crc = 0;
 
@@ -146,7 +148,7 @@ namespace RncProPackDotNet
             return crc;
         }
 
-        public void RorW(ref ushort x)
+        protected void RorW(ref ushort x)
         {
             if ((x & 1) != 0)
                 x = (ushort)(0x8000 | (x >> 1));
@@ -179,7 +181,7 @@ namespace RncProPackDotNet
             return v;
         }
 
-        public void InitDicts(ref Vars v)
+        protected void InitDicts(ref Vars v)
         {
             ushort DictSize = v.DictSize;
 
@@ -213,21 +215,21 @@ namespace RncProPackDotNet
             v.LastMinOffset = 0;
         }
 
-        public void UpdatePackedCrc(ref Vars v, byte b)
+        protected void UpdatePackedCrc(ref Vars v, byte b)
         {
             ushort crc = v.PackedCrc;
             v.PackedCrc = (ushort)(CrcTable[(crc & 0xFF) ^ b] ^ (crc >> 8));
             v.PackedSize++;
         }
 
-        public void UpdateUnpackedCrc(ref Vars v, byte b)
+        protected void UpdateUnpackedCrc(ref Vars v, byte b)
         {
             ushort crc = v.UnpackedCrc;
             v.UnpackedCrc = (ushort)(CrcTable[(crc & 0xFF) ^ b] ^ (crc >> 8));
             v.ProcessedSize++;
         }
 
-        public void WriteToOutput(ref Vars v, byte b)
+        protected void WriteToOutput(ref Vars v, byte b)
         {
             if (v.PackedSize >= (v.FileSize - RNC_HEADER_SIZE))
                 return;
@@ -236,14 +238,14 @@ namespace RncProPackDotNet
             UpdatePackedCrc(ref v, b);
         }
 
-        public byte ReadFromInput(ref Vars v)
+        protected byte ReadFromInput(ref Vars v)
         {
             byte b = ReadByte(v.Input, ref v.InputOffset);
             UpdateUnpackedCrc(ref v, b);
             return b;
         }
 
-        public void WriteBitsM2(ref Vars v, ushort value, int count)
+        protected void WriteBitsM2(ref Vars v, ushort value, int count)
         {
             uint mask = (uint)(1 << (count - 1));
 
@@ -275,7 +277,7 @@ namespace RncProPackDotNet
             }
         }
 
-        public void WriteBitsM1(ref Vars v, ushort value, int count)
+        protected void WriteBitsM1(ref Vars v, ushort value, int count)
         {
             while (count-- > 0)
             {
@@ -304,7 +306,7 @@ namespace RncProPackDotNet
             }
         }
 
-        public void WriteBits(ref Vars v, ushort bits, int count)
+        protected void WriteBits(ref Vars v, ushort bits, int count)
         {
             if (v.Method == 2)
                 WriteBitsM2(ref v, bits, count);
@@ -312,7 +314,7 @@ namespace RncProPackDotNet
                 WriteBitsM1(ref v, bits, count);
         }
 
-        public int FindMatches(ref Vars v)
+        protected int FindMatches(ref Vars v)
         {
             v.MatchCount = 1;
             v.MatchOffset = 0;
@@ -385,7 +387,7 @@ namespace RncProPackDotNet
             return 0;
         }
 
-        public void FindAndCheckMatches(ref Vars v)
+        protected void FindAndCheckMatches(ref Vars v)
         {
             FindMatches(ref v);
 
@@ -417,7 +419,7 @@ namespace RncProPackDotNet
             }
         }
 
-        public int BitsCount(int value)
+        protected int BitsCount(int value)
         {
             int count = 1;
             while ((value >>= 1) != 0)
@@ -426,7 +428,7 @@ namespace RncProPackDotNet
             return count;
         }
 
-        public void UpdateBitsTable(ref Vars v, Huftable[] data, ushort bits)
+        protected void UpdateBitsTable(ref Vars v, Huftable[] data, ushort bits)
         {
             if (bits <= 1)
                 data[bits].l1++;
@@ -436,7 +438,7 @@ namespace RncProPackDotNet
             WriteWordBigEndian(v.Temp, ref v.TempOffset, bits);
         }
 
-        public void EncodeMatches(ref Vars v, ushort w)
+        protected void EncodeMatches(ref Vars v, ushort w)
         {
             while (true)
             {
@@ -497,7 +499,7 @@ namespace RncProPackDotNet
             }
         }
 
-        public void Proc6(ref Vars v)
+        protected void Proc6(ref Vars v)
         {
             v.V17 = 0;
             v.PackBlockLeftSize = v.PackBlockSize;
@@ -578,7 +580,7 @@ namespace RncProPackDotNet
             v.TempOffset = 0;
         }
 
-        public void UpdateTmpCrcData(ref Vars v, byte b)
+        protected void UpdateTmpCrcData(ref Vars v, byte b)
         {
             if (v.BitCount != 0)
             {
@@ -591,7 +593,7 @@ namespace RncProPackDotNet
             }
         }
 
-        public void EncodeMatchesCount(ref Vars v, int count)
+        protected void EncodeMatchesCount(ref Vars v, int count)
         {
             while (count > 0)
             {
@@ -654,7 +656,7 @@ namespace RncProPackDotNet
             }
         }
 
-        public void ClearTable(Huftable[] data, int count)
+        protected void ClearTable(Huftable[] data, int count)
         {
             for (int i = 0; i < count; ++i)
             {
@@ -665,7 +667,7 @@ namespace RncProPackDotNet
             }
         }
 
-        public bool Proc17(ref Vars v, Huftable[] data, int count)
+        protected bool Proc17(ref Vars v, Huftable[] data, int count)
         {
             uint d6 = 0xFFFFFFFF;
             uint d5 = 0xFFFFFFFF;
@@ -695,7 +697,7 @@ namespace RncProPackDotNet
             return (d5 != 0xFFFFFFFF && d6 != 0xFFFFFFFF);
         }
 
-        public uint InverseBits(uint value, int count)
+        protected uint InverseBits(uint value, int count)
         {
             int i = 0;
             while (count-- != 0)
@@ -711,7 +713,7 @@ namespace RncProPackDotNet
             return (uint)i;
         }
 
-        public void Proc20(Huftable[] data, int count)
+        protected void Proc20(Huftable[] data, int count)
         {
             int val = 0;
             uint div = 0x80000000;
@@ -741,7 +743,7 @@ namespace RncProPackDotNet
             }
         }
 
-        public void Proc16(ref Vars v, Huftable[] data, int count)
+        protected void Proc16(ref Vars v, Huftable[] data, int count)
         {
             int d4 = 0;
             int ve = 0;
@@ -789,7 +791,7 @@ namespace RncProPackDotNet
             Proc20(data, count);
         }
 
-        public void Proc18(ref Vars v, Huftable[] data, int count)
+        protected void Proc18(ref Vars v, Huftable[] data, int count)
         {
             int cnt = count;
 
@@ -802,7 +804,7 @@ namespace RncProPackDotNet
                 WriteBitsM1(ref v, data[i].BitDepth, 4);
         }
 
-        public void Proc19(ref Vars v, Huftable[] data, int count)
+        protected void Proc19(ref Vars v, Huftable[] data, int count)
         {
             int bits;
 
@@ -817,7 +819,7 @@ namespace RncProPackDotNet
                 WriteBitsM1(ref v, (ushort)(count - (1 << (bits - 1))), bits - 1);
         }
 
-        public void CompressData2(ref Vars v)
+        protected void CompressData2(ref Vars v)
         {
             int srcOffset = v.ReadStartOffset;
 
@@ -891,7 +893,7 @@ namespace RncProPackDotNet
                 WriteToOutput(ref v, (byte)(v.PackToken & 0xFF));
         }
 
-        public void CompressData1(ref Vars v)
+        protected void CompressData1(ref Vars v)
         {
             int srcOffset = v.ReadStartOffset;
 
@@ -975,7 +977,7 @@ namespace RncProPackDotNet
                 WriteToOutput(ref v, (byte)(v.PackToken >> 8));
         }
 
-        public void DoPackData(ref Vars v)
+        protected void DoPackData(ref Vars v)
         {
             v.UnPackedSize = v.FileSize;
             v.PackedSize = v.FileSize;
@@ -1067,7 +1069,96 @@ namespace RncProPackDotNet
             return 0;
         }
 
-        private byte ReadSourceByte(ref Vars v)
+        public int PackageBullfrogFilesToDatandTab(ref Vars v, string[] filePaths, bool save, bool createTab, string outputPath)
+        {
+            return Package(ref v, filePaths, save, true, outputPath, new byte[] { 0x42, 0x55, 0x4C, 0x4C, 0x46, 0x52, 0x4F, 0x47 });
+        }
+
+        public int Package(ref Vars v, string[] filePaths, bool save, bool createTab, string outputPath, byte[] header = null)
+        {
+            var existingFiles = filePaths.Where(f => File.Exists(f));
+            var errorCode = 0;
+
+            if (existingFiles is null || !existingFiles.Any())
+            {
+                throw new ArgumentNullException(nameof(existingFiles));
+            }
+
+            if (!Directory.Exists(Path.GetDirectoryName(outputPath)))
+            {
+                throw new ArgumentNullException(Path.GetDirectoryName(outputPath));
+            }
+
+
+            List<byte[]> packedFiles = new List<byte[]>();
+
+            foreach (var filePath in existingFiles)
+            {
+                var vars = InitVars();
+                vars.Output = new byte[0x1E00000];
+                vars.Temp = new byte[0x1E00000];
+
+                vars.Input = File.ReadAllBytes(filePath);
+                vars.FileSize = (uint)(vars.Input.Length - vars.ReadStartOffset);
+                vars.DictSize = 0x8000;
+
+                errorCode = DoPack(ref vars);
+                if (errorCode != 0)
+                    return errorCode;
+
+                var bytes = new byte[vars.OutputOffset];
+                Array.Copy(vars.Output, bytes, vars.OutputOffset);
+                packedFiles.Add(bytes);
+                Logger?.LogInformation($"Added File: {filePath}");
+            }
+
+            // Define Header for DAT file
+            v.Output = new byte[(packedFiles.Sum(f => f.Length)) + header.Length];
+
+            WriteToArray(header, v.Output, 0); // BULLFROG
+
+            int fileIndex = header.Length;
+
+            foreach (var fileBytes in packedFiles)
+            {
+                WriteToArray(fileBytes, v.Output, fileBytes.Length + fileIndex);
+                fileIndex += fileBytes.Length;
+            }
+
+            if (save)
+                File.WriteAllBytes(outputPath, v.Output);
+
+            if (createTab)
+            {
+                int levelIndex = 8;
+                fileIndex = 4;
+                v.OutputTab = new byte[LEVELS_TAB_FILE_SIZE];
+                WriteToArray(new byte[] { 0x08, 0x00, 0x00, 0x00 }, v.OutputTab, 0); // BULLFROG header means first entry is always byte 08
+
+                foreach (var filePath in existingFiles)
+                {
+                    var file = File.ReadAllBytes(filePath);
+                    levelIndex += file.Length;
+                    WriteToArray(BitConverter.GetBytes(levelIndex), v.OutputTab, fileIndex);
+                    fileIndex += 4;
+                    Console.WriteLine($"Added File Address: {fileIndex}");
+                }
+
+                if (save)
+                {
+                    var tabFileName = Path.GetFileNameWithoutExtension(outputPath) + ".TAB";
+                    File.WriteAllBytes(Path.Combine(Path.GetDirectoryName(outputPath), tabFileName), v.OutputTab);
+                }
+            }
+            return 0;
+        }
+
+        protected void WriteToArray(byte[] source, byte[] destination, int startIdx)
+        {
+            Buffer.BlockCopy(source, 0, destination, startIdx, source.Length);
+        }
+
+        protected byte ReadSourceByte(ref Vars v)
         {
             if (v.PackBlockStartIdx == 0xFFFD)
             {
@@ -1096,7 +1187,7 @@ namespace RncProPackDotNet
             return v.PackBlockStart[v.PackBlockStartIdx++];
         }
 
-        private uint InputBitsM2(Vars v, short count)
+        protected uint InputBitsM2(Vars v, short count)
         {
             uint bits = 0;
 
@@ -1120,7 +1211,7 @@ namespace RncProPackDotNet
             return bits;
         }
 
-        private uint InputBitsM1(ref Vars v, short count)
+        protected uint InputBitsM1(ref Vars v, short count)
         {
             uint bits = 0;
             uint prevBits = 1;
@@ -1147,12 +1238,12 @@ namespace RncProPackDotNet
             return bits;
         }
 
-        private int InputBits(ref Vars v, short count)
+        protected int InputBits(ref Vars v, short count)
         {
             return (int)(v.Method != 2 ? InputBitsM1(ref v, count) : InputBitsM2(v, count));
         }
 
-        private void DecodeMatchCount(Vars v)
+        protected void DecodeMatchCount(Vars v)
         {
             v.MatchCount = (ushort)(InputBitsM2(v, 1) + 4);
 
@@ -1160,7 +1251,7 @@ namespace RncProPackDotNet
                 v.MatchCount = (ushort)(((v.MatchCount - 1) << 1) + (int)InputBitsM2(v, 1));
         }
 
-        private void DecodeMatchOffset(ref Vars v)
+        protected void DecodeMatchOffset(ref Vars v)
         {
             v.MatchOffset = 0;
             if (InputBitsM2(v, 1) != 0)
@@ -1181,7 +1272,7 @@ namespace RncProPackDotNet
             v.MatchOffset = (ushort)(((v.MatchOffset << 8) | ReadSourceByte(ref v)) + 1);
         }
 
-        private void WriteDecodedByte(ref Vars v, byte b)
+        protected void WriteDecodedByte(ref Vars v, byte b)
         {
             if (v.WindowIdx == 0xFFFF)
             {
@@ -1195,7 +1286,7 @@ namespace RncProPackDotNet
             v.UnpackedCrcReal = (ushort)(CrcTable[(v.UnpackedCrcReal ^ b) & 0xFF] ^ (v.UnpackedCrcReal >> 8));
         }
 
-        private int UnpackDataM2(ref Vars v)
+        protected int UnpackDataM2(ref Vars v)
         {
             while (v.ProcessedSize < v.InputSize)
             {
@@ -1270,7 +1361,7 @@ namespace RncProPackDotNet
             return 0;
         }
 
-        private void MakeHuffTable(ref Vars v, Huftable[] data, int count)
+        protected void MakeHuffTable(ref Vars v, Huftable[] data, int count)
         {
             ClearTable(data, count);
 
@@ -1288,7 +1379,7 @@ namespace RncProPackDotNet
             }
         }
 
-        private uint DecodeTableData(ref Vars v, Huftable[] data)
+        protected uint DecodeTableData(ref Vars v, Huftable[] data)
         {
             int i = 0;
 
@@ -1308,7 +1399,7 @@ namespace RncProPackDotNet
             }
         }
 
-        private int UnpackDataM1(ref Vars v)
+        protected int UnpackDataM1(ref Vars v)
         {
             while (v.ProcessedSize < v.InputSize)
             {
