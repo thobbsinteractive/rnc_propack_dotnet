@@ -72,8 +72,9 @@ public class UnitTest
         }
     }
 
-    [TestCase(@"Resources/Levels", @"Resources/LEVELS.DAT")]
-    public void PackageUnitTest(string inputDir, string expected)
+    [TestCase(@"Resources/Levels", @"Resources/LEVELS.DAT", @"Resources/temp_compressed_fixed.dat", 38812)]
+    [TestCase(@"Resources/Levels", @"Resources/LEVELS.DAT", @"Resources/temp_compressed.dat", 0)]
+    public void PackageUnitTest(string inputDir, string expected, string outputFile, int fileSizeBytes)
     {
         var rncProPack = new RncProPack();
 
@@ -85,9 +86,9 @@ public class UnitTest
 
         var expectedBytes = File.ReadAllBytes(expected);
 
-        rncProPack.DoPackageBullfrogFilesToDatandTab(ref vars, files, 38812, 4000, true, true, @"Resources/temp_compressed.dat");
+        rncProPack.DoPackageBullfrogFilesToDatandTab(ref vars, files, fileSizeBytes, true, true, outputFile);
 
-        var outputBytes = File.ReadAllBytes(@"Resources/temp_compressed.dat");
+        var outputBytes = File.ReadAllBytes(outputFile);
 
         Assert.That(expectedBytes.Length == outputBytes.Length);
 

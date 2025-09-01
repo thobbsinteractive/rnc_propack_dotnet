@@ -1069,12 +1069,12 @@ namespace RncProPackDotNet
             return 0;
         }
 
-        public int DoPackageBullfrogFilesToDatandTab(ref Vars v, string[] filePaths, int fileSizeBytes, int tabSizeBytes, bool save, bool createTab, string outputPath)
+        public int DoPackageBullfrogFilesToDatandTab(ref Vars v, string[] filePaths, int fileSizeBytes, bool save, bool createTab, string outputPath)
         {
-            return DoPackage(ref v, filePaths, fileSizeBytes, tabSizeBytes, save, true, outputPath, new byte[] { 0x42, 0x55, 0x4C, 0x4C, 0x46, 0x52, 0x4F, 0x47 });
+            return DoPackage(ref v, filePaths, fileSizeBytes, save, true, outputPath, new byte[] { 0x42, 0x55, 0x4C, 0x4C, 0x46, 0x52, 0x4F, 0x47 });
         }
         
-        public int DoPackage(ref Vars v, string[] filePaths, int fileSizeBytes, int tabSizeBytes, bool save, bool createTab, string outputPath, byte[] header = null)
+        public int DoPackage(ref Vars v, string[] filePaths, int fileSizeBytes, bool save, bool createTab, string outputPath, byte[] header = null)
         {
             var existingFiles = filePaths.Where(f => File.Exists(f));
             var errorCode = 0;
@@ -1126,6 +1126,7 @@ namespace RncProPackDotNet
 
             foreach (var fileBytes in packedFiles)
             {
+                File.WriteAllBytes($"Compressed-{fileOffsetIndex}.bin", fileBytes);
                 WriteToArray(fileBytes, v.Output, fileOffsetIndex);
                 fileOffsetIndex += fileBytes.Length;
             }
@@ -1137,7 +1138,7 @@ namespace RncProPackDotNet
             {
                 fileOffsetIndex = 8;
                 int fileIndex = 4;
-                v.OutputTab = new byte[tabSizeBytes];
+                v.OutputTab = new byte[4000];
                 WriteToArray(new byte[] { 0x08, 0x00, 0x00, 0x00 }, v.OutputTab, 0); // BULLFROG header means first entry is always byte 08
 
                 foreach (var filePath in existingFiles)
