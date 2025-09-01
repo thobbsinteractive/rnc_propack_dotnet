@@ -1142,8 +1142,15 @@ namespace RncProPackDotNet
 
                 foreach (var filePath in existingFiles)
                 {
-                    var file = File.ReadAllBytes(filePath);
-                    fileOffsetIndex += file.Length;
+                    if (fileSizeBytes == 0)
+                    {
+                        var file = File.ReadAllBytes(filePath);
+                        fileOffsetIndex += file.Length;
+                    }
+                    else
+                    {
+                        fileOffsetIndex += fileSizeBytes;
+                    }
                     WriteToArray(BitConverter.GetBytes(fileOffsetIndex), v.OutputTab, fileIndex);
                     fileIndex += 4;
                     Console.WriteLine($"Added File Address: {fileIndex}");
