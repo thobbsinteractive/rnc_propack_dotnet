@@ -1097,7 +1097,13 @@ namespace RncProPackDotNet
                 vars.Output = new byte[0x1E00000];
                 vars.Temp = new byte[0x1E00000];
 
-                vars.Input = File.ReadAllBytes(filePath);
+                if (fileSizeBytes == 0)
+                    vars.Input = File.ReadAllBytes(filePath);
+                else
+                {
+                    vars.Input = new byte[fileSizeBytes];
+                    Array.Copy(File.ReadAllBytes(filePath), vars.Input, fileSizeBytes);
+                }
                 vars.FileSize = (uint)(vars.Input.Length - vars.ReadStartOffset);
                 vars.DictSize = 0x8000;
 
