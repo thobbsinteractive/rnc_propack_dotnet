@@ -1126,7 +1126,6 @@ namespace RncProPackDotNet
 
             foreach (var fileBytes in packedFiles)
             {
-                File.WriteAllBytes($"Compressed-{fileOffsetIndex}.bin", fileBytes);
                 WriteToArray(fileBytes, v.Output, fileOffsetIndex);
                 fileOffsetIndex += fileBytes.Length;
             }
@@ -1136,25 +1135,23 @@ namespace RncProPackDotNet
 
             if (createTab)
             {
-                fileOffsetIndex = 8;
                 int fileIndex = 4;
+                fileOffsetIndex = 8;
                 v.OutputTab = new byte[4000];
                 WriteToArray(new byte[] { 0x08, 0x00, 0x00, 0x00 }, v.OutputTab, 0); // BULLFROG header means first entry is always byte 08
 
-                foreach (var filePath in existingFiles)
+                foreach (var fileBytes in packedFiles)
                 {
-                    if (fileSizeBytes == 0)
-                    {
-                        var file = File.ReadAllBytes(filePath);
-                        fileOffsetIndex += file.Length;
-                    }
-                    else
-                    {
-                        fileOffsetIndex += fileSizeBytes;
-                    }
+                    fileOffsetIndex += fileBytes.Length;
+                    WriteToArray(BitConverter.GetBytes(fileOffsetIndex), v.OutputTab, fileIndex);
+                    Logger?.LogInformation($"Added File Address: {fileOffsetIndex}");
+                    fileIndex += 4;
+                }
+
+                while (fileIndex < 4000)
+                {
                     WriteToArray(BitConverter.GetBytes(fileOffsetIndex), v.OutputTab, fileIndex);
                     fileIndex += 4;
-                    Console.WriteLine($"Added File Address: {fileIndex}");
                 }
 
                 if (save)

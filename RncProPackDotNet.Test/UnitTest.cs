@@ -72,8 +72,8 @@ public class UnitTest
         }
     }
 
-    [TestCase(@"Resources/Levels", @"Resources/PackedLevels.DAT")]
-    public void PackageUnitTest(string inputDir, string expected)
+    [TestCase(@"Resources/Levels", @"Resources/PackedLevels.DAT", @"Resources/PackedLevels.TAB")]
+    public void PackageUnitTest(string inputDir, string expectedDat, string expectedTab)
     {
         var rncProPack = new RncProPack();
 
@@ -83,17 +83,26 @@ public class UnitTest
 
         var files = Directory.GetFiles(inputDir);
 
-        var expectedBytes = File.ReadAllBytes(expected);
+        var expectedDatBytes = File.ReadAllBytes(expectedDat);
+        var expectedTabBytes = File.ReadAllBytes(expectedTab);
 
         rncProPack.DoPackageBullfrogFilesToDatandTab(ref vars, files, 38812, true, true, @"Resources/package_compressed.DAT");
 
-        var outputBytes = File.ReadAllBytes(@"Resources/package_compressed.DAT");
+        var outputDatBytes = File.ReadAllBytes(@"Resources/package_compressed.DAT");
+        var outputTabBytes = File.ReadAllBytes(@"Resources/package_compressed.TAB");
 
-        Assert.That(expectedBytes.Length == outputBytes.Length);
+        Assert.That(expectedDatBytes.Length == outputDatBytes.Length);
 
-        for (int i = 0; i < expectedBytes.Length; i++)
+        for (int i = 0; i < expectedDatBytes.Length; i++)
         {
-            Assert.That(expectedBytes[i] == vars.Output[i]);
+            Assert.That(expectedDatBytes[i] == vars.Output[i]);
+        }
+
+        Assert.That(expectedTabBytes.Length == outputTabBytes.Length);
+
+        for (int i = 0; i < expectedTabBytes.Length; i++)
+        {
+            Assert.That(expectedTabBytes[i] == vars.OutputTab[i]);
         }
     }
 }
