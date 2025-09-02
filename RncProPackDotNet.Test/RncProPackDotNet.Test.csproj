@@ -15,6 +15,15 @@
   </ItemGroup>
 
   <ItemGroup>
+    <Content Include="Resources\Levels\level1.dat">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Resources\Levels\level2.dat">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Resources\Levels\level3.dat">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
     <Content Include="Resources\mazetrap_uncompressed.bin">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
@@ -42,10 +51,6 @@
     <Content Include="Resources\mazetrap_compressed.bin">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
-  </ItemGroup>
-
-  <ItemGroup>
-    <Folder Include="Resources\Levels\" />
   </ItemGroup>
 
 </Project>
