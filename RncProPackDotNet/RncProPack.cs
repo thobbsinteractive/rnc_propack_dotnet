@@ -1069,12 +1069,12 @@ namespace RncProPackDotNet
             return 0;
         }
 
-        public int DoPackageBullfrogFilesToDatandTab(ref Vars v, string[] filePaths, int fileSizeBytes, bool save, bool createTab, string outputPath)
+        public int DoPackAndPackageBullfrogFilesToDatandTab(ref Vars v, string[] filePaths, int fileSizeBytes, bool save, string outputPath)
         {
-            return DoPackage(ref v, filePaths, fileSizeBytes, save, true, outputPath, new byte[] { 0x42, 0x55, 0x4C, 0x4C, 0x46, 0x52, 0x4F, 0x47 });
+            return DoPackAndPackage(ref v, filePaths, fileSizeBytes, save, 4000, outputPath, new byte[] { 0x42, 0x55, 0x4C, 0x4C, 0x46, 0x52, 0x4F, 0x47 });
         }
         
-        public int DoPackage(ref Vars v, string[] filePaths, int fileSizeBytes, bool save, bool createTab, string outputPath, byte[] header = null)
+        public int DoPackAndPackage(ref Vars v, string[] filePaths, int fileUnpackedSizeBytes, bool save, int tabFileSizeBytes, string outputPath, byte[] header = null)
         {
             var existingFiles = filePaths.Where(f => File.Exists(f));
             var errorCode = 0;
@@ -1097,12 +1097,12 @@ namespace RncProPackDotNet
                 vars.Output = new byte[0x1E00000];
                 vars.Temp = new byte[0x1E00000];
 
-                if (fileSizeBytes == 0)
+                if (fileUnpackedSizeBytes == 0)
                     vars.Input = File.ReadAllBytes(filePath);
                 else
                 {
-                    vars.Input = new byte[fileSizeBytes];
-                    Array.Copy(File.ReadAllBytes(filePath), vars.Input, fileSizeBytes);
+                    vars.Input = new byte[fileUnpackedSizeBytes];
+                    Array.Copy(File.ReadAllBytes(filePath), vars.Input, fileUnpackedSizeBytes);
                 }
                 vars.FileSize = (uint)(vars.Input.Length - vars.ReadStartOffset);
                 vars.DictSize = 0x8000;
@@ -1133,11 +1133,11 @@ namespace RncProPackDotNet
             if (save)
                 File.WriteAllBytes(outputPath, v.Output);
 
-            if (createTab)
+            if (tabFileSizeBytes > 0)
             {
                 int fileIndex = 4;
                 fileOffsetIndex = 8;
-                v.OutputTab = new byte[4000];
+                v.OutputTab = new byte[tabFileSizeBytes];
                 WriteToArray(new byte[] { 0x08, 0x00, 0x00, 0x00 }, v.OutputTab, 0); // BULLFROG header means first entry is always byte 08
 
                 foreach (var fileBytes in packedFiles)
@@ -1148,7 +1148,86 @@ namespace RncProPackDotNet
                     fileIndex += 4;
                 }
 
-                while (fileIndex < 4000)
+                while (fileIndex < tabFileSizeBytes)
+                {
+                    WriteToArray(BitConverter.GetBytes(fileOffsetIndex), v.OutputTab, fileIndex);
+                    fileIndex += 4;
+                }
+
+                if (save)
+                {
+                    var tabFileName = Path.GetFileNameWithoutExtension(outputPath) + ".TAB";
+                    File.WriteAllBytes(Path.Combine(Path.GetDirectoryName(outputPath), tabFileName), v.OutputTab);
+                }
+            }
+            return 0;
+        }
+
+        public int DoPackageBullfrogFilesToDatandTab(ref Vars v, string[] filePaths, int fileSizeBytes, bool save, string outputPath)
+        {
+            return DoPackage(ref v, filePaths, fileSizeBytes, save, 4000, outputPath, new byte[] { 0x42, 0x55, 0x4C, 0x4C, 0x46, 0x52, 0x4F, 0x47 });
+        }
+
+        public int DoPackage(ref Vars v, string[] filePaths, int fileSizeBytes, bool save, int tabFileSizeBytes, string outputPath, byte[] header = null)
+        {
+            var existingFiles = filePaths.Where(f => File.Exists(f)).ToList();
+
+            if (!existingFiles.Any())
+            {
+                throw new ArgumentNullException(nameof(existingFiles));
+            }
+
+            if (!Directory.Exists(Path.GetDirectoryName(outputPath)))
+            {
+                throw new ArgumentNullException(Path.GetDirectoryName(outputPath));
+            }
+
+            List<byte[]> fileBytesList = new List<byte[]>();
+
+            foreach (var filePath in existingFiles)
+            {
+                if (fileSizeBytes == 0)
+                    fileBytesList.Add(File.ReadAllBytes(filePath));
+                else
+                {
+                    var bytes = new byte[fileSizeBytes];
+                    Array.Copy(File.ReadAllBytes(filePath), bytes, fileSizeBytes);
+                    fileBytesList.Add(bytes);
+                }
+            }
+
+            // Define Header for DAT file
+            v.Output = new byte[(fileBytesList.Sum(f => f.Length)) + header.Length];
+
+            WriteToArray(header, v.Output, 0); // BULLFROG
+
+            int fileOffsetIndex = header.Length;
+
+            foreach (var fileBytes in fileBytesList)
+            {
+                WriteToArray(fileBytes, v.Output, fileOffsetIndex);
+                fileOffsetIndex += fileBytes.Length;
+            }
+
+            if (save)
+                File.WriteAllBytes(outputPath, v.Output);
+
+            if (tabFileSizeBytes > 0)
+            {
+                int fileIndex = 4;
+                fileOffsetIndex = 8;
+                v.OutputTab = new byte[tabFileSizeBytes];
+                WriteToArray(new byte[] { 0x08, 0x00, 0x00, 0x00 }, v.OutputTab, 0); // BULLFROG header means first entry is always byte 08
+
+                foreach (var fileBytes in fileBytesList)
+                {
+                    fileOffsetIndex += fileBytes.Length;
+                    WriteToArray(BitConverter.GetBytes(fileOffsetIndex), v.OutputTab, fileIndex);
+                    Logger?.LogInformation($"Added File Address: {fileOffsetIndex}");
+                    fileIndex += 4;
+                }
+
+                while (fileIndex < tabFileSizeBytes)
                 {
                     WriteToArray(BitConverter.GetBytes(fileOffsetIndex), v.OutputTab, fileIndex);
                     fileIndex += 4;

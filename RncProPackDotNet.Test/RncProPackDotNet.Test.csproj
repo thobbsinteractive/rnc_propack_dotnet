@@ -12,8 +12,8 @@
   <ItemGroup>
     <None Remove="Resources\mazetrap_compressed.bin" />
     <None Remove="Resources\mazetrap_uncompressed.bin" />
-    <None Remove="Resources\PackedLevels.DAT" />
-    <None Remove="Resources\PackedLevels.TAB" />
+    <None Remove="Resources\PackagedLevels.DAT" />
+    <None Remove="Resources\PackagedLevels.TAB" />
   </ItemGroup>
 
   <ItemGroup>
@@ -29,10 +29,16 @@
     <Content Include="Resources\mazetrap_uncompressed.bin">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
-    <Content Include="Resources\PackedLevels.DAT">
+    <Content Include="Resources\PackagedLevels.DAT">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
-    <Content Include="Resources\PackedLevels.TAB">
+    <Content Include="Resources\PackagedLevels.TAB">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Resources\PackedAndPackagedLevels.DAT">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Resources\PackedAndPackagedLevels.TAB">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
   </ItemGroup>

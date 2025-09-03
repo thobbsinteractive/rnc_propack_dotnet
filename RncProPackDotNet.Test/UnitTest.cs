@@ -72,7 +72,7 @@ public class UnitTest
         }
     }
 
-    [TestCase(@"Resources/Levels", @"Resources/PackedLevels.DAT", @"Resources/PackedLevels.TAB")]
+    [TestCase(@"Resources/Levels", @"Resources/PackagedLevels.DAT", @"Resources/PackagedLevels.TAB")]
     public void PackageUnitTest(string inputDir, string expectedDat, string expectedTab)
     {
         var rncProPack = new RncProPack();
@@ -86,7 +86,41 @@ public class UnitTest
         var expectedDatBytes = File.ReadAllBytes(expectedDat);
         var expectedTabBytes = File.ReadAllBytes(expectedTab);
 
-        rncProPack.DoPackageBullfrogFilesToDatandTab(ref vars, files, 38812, true, true, @"Resources/package_compressed.DAT");
+        rncProPack.DoPackageBullfrogFilesToDatandTab(ref vars, files, 38812, true, @"Resources/package.DAT");
+
+        var outputDatBytes = File.ReadAllBytes(@"Resources/package.DAT");
+        var outputTabBytes = File.ReadAllBytes(@"Resources/package.TAB");
+
+        Assert.That(expectedDatBytes.Length == outputDatBytes.Length);
+
+        for (int i = 0; i < expectedDatBytes.Length; i++)
+        {
+            Assert.That(expectedDatBytes[i] == vars.Output[i]);
+        }
+
+        Assert.That(expectedTabBytes.Length == outputTabBytes.Length);
+
+        for (int i = 0; i < expectedTabBytes.Length; i++)
+        {
+            Assert.That(expectedTabBytes[i] == vars.OutputTab[i]);
+        }
+    }
+
+    [TestCase(@"Resources/Levels", @"Resources/PackedAndPackagedLevels.DAT", @"Resources/PackedAndPackagedLevels.TAB")]
+    public void PackAndPackageUnitTest(string inputDir, string expectedDat, string expectedTab)
+    {
+        var rncProPack = new RncProPack();
+
+        var vars = rncProPack.InitVars();
+        vars.Output = new byte[0x1E00000];
+        vars.Temp = new byte[0x1E00000];
+
+        var files = Directory.GetFiles(inputDir);
+
+        var expectedDatBytes = File.ReadAllBytes(expectedDat);
+        var expectedTabBytes = File.ReadAllBytes(expectedTab);
+
+        rncProPack.DoPackAndPackageBullfrogFilesToDatandTab(ref vars, files, 38812, true, @"Resources/package_compressed.DAT");
 
         var outputDatBytes = File.ReadAllBytes(@"Resources/package_compressed.DAT");
         var outputTabBytes = File.ReadAllBytes(@"Resources/package_compressed.TAB");
