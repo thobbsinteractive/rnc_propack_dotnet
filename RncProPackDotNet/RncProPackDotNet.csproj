@@ -1,0 +1,25 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>netstandard2.0</TargetFramework>
+    <GeneratePackageOnBuild>True</GeneratePackageOnBuild>
+    <PackageId>$(AssemblyName)</PackageId>
+    <Title>A .Net Standard 2.0 library conversion of rnc_propack_source</Title>
+    <Authors>Tim Hobbs</Authors>
+    <PackageProjectUrl>https://github.com/thobbsinteractive/rnc_propack_dotnet</PackageProjectUrl>
+    <RepositoryUrl>https://github.com/thobbsinteractive/rnc_propack_dotnet</RepositoryUrl>
+    <RepositoryType>git</RepositoryType>
+    <PackageTags>RNC, RNC Pack, RNC Unpack, RNC Search</PackageTags>
+    <PackageReleaseNotes>First release. Seems to work with extracting and compressing Magic Carpet Levels</PackageReleaseNotes>
+    <PackAsTool>False</PackAsTool>
+    <Copyright>Tim Hobbs 2025</Copyright>
+    <Description>A .Net Standard 2.0 library conversion of rnc_propack_source (decompiled source of the famous RNC ProPack compression tool)</Description>
+    <Version>1.1.0.0</Version>
+    <PackageLicenseExpression>MIT</PackageLicenseExpression>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="9.0.8" />
+  </ItemGroup>
+
+</Project>
