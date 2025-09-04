@@ -1,5 +1,11 @@
 # rnc_propack_dotnet
 A .Net Standard 2.0 library of rnc_propack_source (decompiled source of the famous RNC ProPack compression tool see: https://github.com/lab313ru/rnc_propack_source)
+## Build Status:
+
+|Branch|Linux|
+|------|:---:|
+|master|[![.NET](https://github.com/thobbsinteractive/rnc_propack_dotnet/actions/workflows/dotnet.yml/badge.svg?branch=master)](https://github.com/thobbsinteractive/magic-carpet-2-hd/actions/workflows/msbuild.yml)|
+|development|[![.NET]([https://github.com/thobbsinteractive/magic-carpet-2-hd/actions/workflows/msbuild.yml/badge.svg)](https://github.com/thobbsinteractive/rnc_propack_dotnet/actions/workflows/dotnet.yml)|
 
 ## Calling the Library
 You can see how the Library is used in the console application
